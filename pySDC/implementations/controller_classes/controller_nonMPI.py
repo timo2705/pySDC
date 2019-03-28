@@ -2,6 +2,7 @@ import itertools
 import copy as cp
 import numpy as np
 import dill
+import pickle
 
 from pySDC.core.Controller import controller
 from pySDC.core import Step as stepclass
@@ -38,7 +39,7 @@ class controller_nonMPI(controller):
             for p in range(num_procs - 1):
                 self.MS.append(dill.copy(self.MS[0]))
         # if this fails (e.g. due to un-picklable data in the steps), initialize seperately
-        except dill.PicklingError and TypeError:
+        except dill.PicklingError and TypeError and pickle.PicklingError:
             self.logger.warning('Need to initialize steps separately due to pickling error')
             for p in range(num_procs - 1):
                 self.MS.append(stepclass.step(description))

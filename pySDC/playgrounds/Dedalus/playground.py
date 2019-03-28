@@ -1,20 +1,35 @@
+from mpi4py import MPI
 
 from dedalus import public as de
 import numpy as np
 import matplotlib.pyplot as plt
+
+
+
+comm = MPI.COMM_WORLD
+
+world_rank = comm.Get_rank()
+# split world communicator to create space-communicators
+color = int(world_rank / 1)
+space_comm = comm.Split(color=color)
+space_size = space_comm.Get_size()
+space_rank = space_comm.Get_rank()
 
 de.logging_setup.rootlogger.setLevel('INFO')
 
 xbasis = de.Fourier('x', 8, interval=(0,1), dealias=1)
 
 
-domain = de.Domain([xbasis],grid_dtype=np.float64,mesh=[1])
+domain = de.Domain([xbasis], grid_dtype=np.float64, comm=space_comm)
+domain_2 = de.Domain([xbasis], grid_dtype=np.float64, comm=space_comm)
 
-print(domain.global_grid_shape())
+print(domain.global_grid_shape(), domain.local_grid_shape())
 
 f = domain.new_field()
 
-g = domain.new_field()
+g = domain_2.new_field()
+
+print(f + g)
 
 x = domain.grid(0, scales=1)
 
@@ -25,7 +40,7 @@ g['g'] = np.cos(2*np.pi*x)
 u = domain.new_field()
 
 xbasis_c = de.Fourier('x', 4, interval=(0,1), dealias=1)
-domain_c = de.Domain([xbasis_c],grid_dtype=np.float64, mesh=[1])
+domain_c = de.Domain([xbasis_c],grid_dtype=np.float64, comm=space_comm)
 
 fex = domain.new_field()
 fex['g'] = np.copy(f['g'])
@@ -36,6 +51,11 @@ ff.set_scales(scales=0.5)
 
 fc = domain_c.new_field()
 fc['g'] = ff['g']
+
+if comm.Get_rank() == 0:
+    comm.send(fc['g'], dest=1, tag=1)
+else:
+    fc['g'] = comm.recv(source=0, tag=1)
 
 
 print(fc['g'].shape, fex['g'].shape)

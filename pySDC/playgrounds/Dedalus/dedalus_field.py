@@ -55,7 +55,7 @@ class dedalus_field(object):
         if isinstance(other, type(self)):
             # always create new mesh, since otherwise c = a + b changes a as well!
             me = dedalus_field(other.domain)
-            me.values = (self.values + other.values).evaluate()
+            me.values['g'] = self.values['g'] + other.values['g']
             return me
         else:
             raise DataError("Type error: cannot add %s to %s" % (type(other), type(self)))
@@ -75,7 +75,7 @@ class dedalus_field(object):
         if isinstance(other, type(self)):
             # always create new mesh, since otherwise c = a - b changes a as well!
             me = dedalus_field(other.domain)
-            me.values = (self.values - other.values).evaluate()
+            me.values['g'] = self.values['g'] - other.values['g']
             return me
         else:
             raise DataError("Type error: cannot subtract %s from %s" % (type(other), type(self)))

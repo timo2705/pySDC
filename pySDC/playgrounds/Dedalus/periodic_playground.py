@@ -18,7 +18,7 @@ def main():
     # initialize level parameters
     level_params = dict()
     level_params['restol'] = 1E-08
-    level_params['dt'] = 1.0 / 2
+    level_params['dt'] = 1.0 / 4
     level_params['nsweeps'] = [1]
 
     # initialize sweeper parameters
@@ -59,7 +59,7 @@ def main():
     t0 = 0.0
     Tend = 1.0
 
-    num_procs = 1
+    num_procs = 4
 
     # instantiate controller
     controller = controller_nonMPI(num_procs=num_procs, controller_params=controller_params, description=description)
