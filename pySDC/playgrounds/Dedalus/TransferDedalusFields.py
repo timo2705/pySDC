@@ -52,6 +52,7 @@ class dedalus_field_transfer(space_transfer):
             FG['g'] = F.impl.values['g']
             FG.set_scales(scales=1.0 / self.ratio[0])
             G.impl.values['g'] = FG['g']
+            FG = self.fine_prob.init.new_field()
             FG['g'] = F.expl.values['g']
             FG.set_scales(scales=1.0 / self.ratio[0])
             G.expl.values['g'] = FG['g']
@@ -76,8 +77,9 @@ class dedalus_field_transfer(space_transfer):
             F = self.fine_prob.dtype_f(self.fine_prob.init)
             GF = self.coarse_prob.init.new_field()
             GF['g'] = G.impl.values['g']
-            GF.set_scale(scales=self.ratio[0])
+            GF.set_scales(scales=self.ratio[0])
             F.impl.values['g'] = GF['g']
+            GF = self.coarse_prob.init.new_field()
             GF['g'] = G.expl.values['g']
             GF.set_scales(scales=self.ratio[0])
             F.expl.values['g'] = GF['g']

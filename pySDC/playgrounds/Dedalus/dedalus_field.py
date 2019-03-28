@@ -225,68 +225,68 @@ class rhs_imex_dedalus_field(object):
         else:
             raise DataError('something went wrong during %s initialization' % type(self))
 
-    # def __sub__(self, other):
-    #     """
-    #     Overloading the subtraction operator for rhs types
-    #
-    #     Args:
-    #         other (mesh.rhs_imex_field): rhs object to be subtracted
-    #     Raises:
-    #         DataError: if other is not a rhs object
-    #     Returns:
-    #         mesh.rhs_imex_field: differences between caller and other values (self-other)
-    #     """
-    #
-    #     if isinstance(other, rhs_imex_dedalus_field):
-    #         # always create new rhs_imex_field, since otherwise c = a - b changes a as well!
-    #         me = rhs_imex_dedalus_field(self.domain)
-    #         me.impl.values = self.impl.values - other.impl.values
-    #         me.expl.values = self.expl.values - other.expl.values
-    #         return me
-    #     else:
-    #         raise DataError("Type error: cannot subtract %s from %s" % (type(other), type(self)))
-    #
-    # def __add__(self, other):
-    #     """
-    #      Overloading the addition operator for rhs types
-    #
-    #     Args:
-    #         other (mesh.rhs_imex_field): rhs object to be added
-    #     Raises:
-    #         DataError: if other is not a rhs object
-    #     Returns:
-    #         mesh.rhs_imex_field: sum of caller and other values (self-other)
-    #     """
-    #
-    #     if isinstance(other, rhs_imex_dedalus_field):
-    #         # always create new rhs_imex_field, since otherwise c = a + b changes a as well!
-    #         me = rhs_imex_dedalus_field(self.domain)
-    #         me.impl.values = self.impl.values + other.impl.values
-    #         me.expl.values = self.expl.values + other.expl.values
-    #         return me
-    #     else:
-    #         raise DataError("Type error: cannot add %s to %s" % (type(other), type(self)))
-    #
-    # def __rmul__(self, other):
-    #     """
-    #     Overloading the right multiply by factor operator for mesh types
-    #
-    #     Args:
-    #         other (float): factor
-    #     Raises:
-    #         DataError: is other is not a float
-    #     Returns:
-    #          mesh.rhs_imex_field: copy of original values scaled by factor
-    #     """
-    #
-    #     if isinstance(other, float):
-    #         # always create new rhs_imex_field
-    #         me = rhs_imex_dedalus_field(self.domain)
-    #         me.impl = other * self.impl
-    #         me.expl = other * self.expl
-    #         return me
-    #     else:
-    #         raise DataError("Type error: cannot multiply %s to %s" % (type(other), type(self)))
+    def __sub__(self, other):
+        """
+        Overloading the subtraction operator for rhs types
+
+        Args:
+            other (mesh.rhs_imex_field): rhs object to be subtracted
+        Raises:
+            DataError: if other is not a rhs object
+        Returns:
+            mesh.rhs_imex_field: differences between caller and other values (self-other)
+        """
+
+        if isinstance(other, rhs_imex_dedalus_field):
+            # always create new rhs_imex_field, since otherwise c = a - b changes a as well!
+            me = rhs_imex_dedalus_field(self.domain)
+            me.impl = self.impl - other.impl
+            me.expl = self.expl - other.expl
+            return me
+        else:
+            raise DataError("Type error: cannot subtract %s from %s" % (type(other), type(self)))
+
+    def __add__(self, other):
+        """
+         Overloading the addition operator for rhs types
+
+        Args:
+            other (mesh.rhs_imex_field): rhs object to be added
+        Raises:
+            DataError: if other is not a rhs object
+        Returns:
+            mesh.rhs_imex_field: sum of caller and other values (self-other)
+        """
+
+        if isinstance(other, rhs_imex_dedalus_field):
+            # always create new rhs_imex_field, since otherwise c = a + b changes a as well!
+            me = rhs_imex_dedalus_field(self.domain)
+            me.impl = self.impl + other.impl
+            me.expl = self.expl + other.expl
+            return me
+        else:
+            raise DataError("Type error: cannot add %s to %s" % (type(other), type(self)))
+
+    def __rmul__(self, other):
+        """
+        Overloading the right multiply by factor operator for mesh types
+
+        Args:
+            other (float): factor
+        Raises:
+            DataError: is other is not a float
+        Returns:
+             mesh.rhs_imex_field: copy of original values scaled by factor
+        """
+
+        if isinstance(other, float):
+            # always create new rhs_imex_field
+            me = rhs_imex_dedalus_field(self.domain)
+            me.impl = other * self.impl
+            me.expl = other * self.expl
+            return me
+        else:
+            raise DataError("Type error: cannot multiply %s to %s" % (type(other), type(self)))
     #
     # def apply_mat(self, A):
     #     """
