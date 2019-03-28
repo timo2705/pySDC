@@ -5,7 +5,8 @@ from pySDC.helpers.stats_helper import filter_stats, sort_stats
 from pySDC.implementations.collocation_classes.gauss_radau_right import CollGaussRadau_Right
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
-# from pySDC.implementations.transfer_classes.TransferMesh import mesh_to_mesh
+
+from pySDC.playgrounds.Dedalus.TransferDedalusFields import dedalus_field_transfer
 from pySDC.playgrounds.Dedalus.HeatEquation_1D_Dedalus_forced import heat1d_dedalus_forced
 
 
@@ -31,7 +32,7 @@ def main():
     problem_params = dict()
     problem_params['nu'] = 0.1  # diffusion coefficient
     problem_params['freq'] = 2  # frequency for the test value
-    problem_params['nvars'] = [16]  # number of degrees of freedom for each level
+    problem_params['nvars'] = [16, 4]  # number of degrees of freedom for each level
     problem_params['scale'] = [1]  #
 
     # initialize step parameters
@@ -51,7 +52,7 @@ def main():
     description['sweeper_params'] = sweeper_params  # pass sweeper parameters
     description['level_params'] = level_params  # pass level parameters
     description['step_params'] = step_params  # pass step parameters
-    # description['space_transfer_class'] = mesh_to_mesh  # pass spatial transfer class
+    description['space_transfer_class'] = dedalus_field_transfer
     # description['space_transfer_params'] = space_transfer_params  # pass paramters for spatial transfer
 
     # set time parameters

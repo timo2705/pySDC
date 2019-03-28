@@ -10,18 +10,9 @@ xbasis = de.Fourier('x', 8, interval=(0,1), dealias=1)
 
 domain = de.Domain([xbasis],grid_dtype=np.float64,mesh=[1])
 
+print(domain.global_grid_shape())
+
 f = domain.new_field()
-f['g'][:] = 1.0
-
-domain_2 = domain
-
-f2 = domain_2.new_field()
-f2['g'][:] = 2.0
-
-print(f['g'])
-print(f2['g'])
-
-exit()
 
 g = domain.new_field()
 
@@ -33,18 +24,25 @@ g['g'] = np.cos(2*np.pi*x)
 
 u = domain.new_field()
 
-fc = domain.new_field()
-fc['g'] = np.copy(f['g'])
+xbasis_c = de.Fourier('x', 4, interval=(0,1), dealias=1)
+domain_c = de.Domain([xbasis_c],grid_dtype=np.float64, mesh=[1])
+
+fex = domain.new_field()
+fex['g'] = np.copy(f['g'])
 
 ff = domain.new_field()
 ff['g'] = np.copy(f['g'])
-ff.set_scales(scales=2)
+ff.set_scales(scales=0.5)
+
+fc = domain_c.new_field()
+fc['g'] = ff['g']
 
 
-# print(ff['g'].shape, fc['g'].shape)
+print(fc['g'].shape, fex['g'].shape)
 #
-# print((ff-fc).evaluate()['g'])
+# print((fc-fex).evaluate()['g'])
 
+exit()
 
 h = (f + g).evaluate()
 

@@ -5,7 +5,7 @@ from dedalus import public as de
 from pySDC.core.Errors import DataError
 
 
-class dedalus_mesh(object):
+class dedalus_field(object):
     """
     Dedalus data type
 
@@ -54,7 +54,7 @@ class dedalus_mesh(object):
 
         if isinstance(other, type(self)):
             # always create new mesh, since otherwise c = a + b changes a as well!
-            me = dedalus_mesh(other.domain)
+            me = dedalus_field(other.domain)
             me.values = (self.values + other.values).evaluate()
             return me
         else:
@@ -74,7 +74,7 @@ class dedalus_mesh(object):
 
         if isinstance(other, type(self)):
             # always create new mesh, since otherwise c = a - b changes a as well!
-            me = dedalus_mesh(other.domain)
+            me = dedalus_field(other.domain)
             me.values = (self.values - other.values).evaluate()
             return me
         else:
@@ -94,7 +94,7 @@ class dedalus_mesh(object):
 
         if isinstance(other, float):
             # always create new mesh, since otherwise c = a * factor changes a as well!
-            me = dedalus_mesh(self)
+            me = dedalus_field(self)
             me.values['g'] = other * self.values['g']
             return me
         else:
@@ -126,7 +126,7 @@ class dedalus_mesh(object):
         if not A.shape[1] == self.values.shape[0]:
             raise DataError("ERROR: cannot apply operator %s to %s" % (A.shape[1], self))
 
-        me = dedalus_mesh(self)
+        me = dedalus_field(self)
         me.values['g'] = A.dot(self.values['g'])
 
         return me
@@ -190,7 +190,7 @@ class dedalus_mesh(object):
     #     return comm.bcast(self, root=root)
 
 
-class rhs_imex_dedalus_mesh(object):
+class rhs_imex_dedalus_field(object):
     """
     RHS data type for meshes with implicit and explicit components
 
@@ -207,21 +207,21 @@ class rhs_imex_dedalus_mesh(object):
 
         Args:
             init: can either be a tuple (one int per dimension) or a number (if only one dimension is requested)
-                  or another rhs_imex_mesh object
+                  or another rhs_imex_field object
             val (float): an initial number (default: 0.0)
         Raises:
             DataError: if init is none of the types above
         """
 
-        # if init is another rhs_imex_mesh, do a deepcopy (init by copy)
+        # if init is another rhs_imex_field, do a deepcopy (init by copy)
         if isinstance(init, type(self)):
             self.domain = init.domain
-            self.impl = dedalus_mesh(init.impl)
-            self.expl = dedalus_mesh(init.expl)
+            self.impl = dedalus_field(init.impl)
+            self.expl = dedalus_field(init.expl)
         elif isinstance(init, de.Domain):
             self.domain = init
-            self.impl = dedalus_mesh(init, val=val)
-            self.expl = dedalus_mesh(init, val=val)
+            self.impl = dedalus_field(init, val=val)
+            self.expl = dedalus_field(init, val=val)
         else:
             raise DataError('something went wrong during %s initialization' % type(self))
 
@@ -230,16 +230,16 @@ class rhs_imex_dedalus_mesh(object):
     #     Overloading the subtraction operator for rhs types
     #
     #     Args:
-    #         other (mesh.rhs_imex_mesh): rhs object to be subtracted
+    #         other (mesh.rhs_imex_field): rhs object to be subtracted
     #     Raises:
     #         DataError: if other is not a rhs object
     #     Returns:
-    #         mesh.rhs_imex_mesh: differences between caller and other values (self-other)
+    #         mesh.rhs_imex_field: differences between caller and other values (self-other)
     #     """
     #
-    #     if isinstance(other, rhs_imex_dedalus_mesh):
-    #         # always create new rhs_imex_mesh, since otherwise c = a - b changes a as well!
-    #         me = rhs_imex_dedalus_mesh(self.domain)
+    #     if isinstance(other, rhs_imex_dedalus_field):
+    #         # always create new rhs_imex_field, since otherwise c = a - b changes a as well!
+    #         me = rhs_imex_dedalus_field(self.domain)
     #         me.impl.values = self.impl.values - other.impl.values
     #         me.expl.values = self.expl.values - other.expl.values
     #         return me
@@ -251,16 +251,16 @@ class rhs_imex_dedalus_mesh(object):
     #      Overloading the addition operator for rhs types
     #
     #     Args:
-    #         other (mesh.rhs_imex_mesh): rhs object to be added
+    #         other (mesh.rhs_imex_field): rhs object to be added
     #     Raises:
     #         DataError: if other is not a rhs object
     #     Returns:
-    #         mesh.rhs_imex_mesh: sum of caller and other values (self-other)
+    #         mesh.rhs_imex_field: sum of caller and other values (self-other)
     #     """
     #
-    #     if isinstance(other, rhs_imex_dedalus_mesh):
-    #         # always create new rhs_imex_mesh, since otherwise c = a + b changes a as well!
-    #         me = rhs_imex_dedalus_mesh(self.domain)
+    #     if isinstance(other, rhs_imex_dedalus_field):
+    #         # always create new rhs_imex_field, since otherwise c = a + b changes a as well!
+    #         me = rhs_imex_dedalus_field(self.domain)
     #         me.impl.values = self.impl.values + other.impl.values
     #         me.expl.values = self.expl.values + other.expl.values
     #         return me
@@ -276,12 +276,12 @@ class rhs_imex_dedalus_mesh(object):
     #     Raises:
     #         DataError: is other is not a float
     #     Returns:
-    #          mesh.rhs_imex_mesh: copy of original values scaled by factor
+    #          mesh.rhs_imex_field: copy of original values scaled by factor
     #     """
     #
     #     if isinstance(other, float):
-    #         # always create new rhs_imex_mesh
-    #         me = rhs_imex_dedalus_mesh(self.domain)
+    #         # always create new rhs_imex_field
+    #         me = rhs_imex_dedalus_field(self.domain)
     #         me.impl = other * self.impl
     #         me.expl = other * self.expl
     #         return me
@@ -296,7 +296,7 @@ class rhs_imex_dedalus_mesh(object):
     #         A: a matrix
     #
     #     Returns:
-    #         mesh.rhs_imex_mesh: each component multiplied by the matrix A
+    #         mesh.rhs_imex_field: each component multiplied by the matrix A
     #     """
     #
     #     if not A.shape[1] == self.impl.values.shape[0]:
@@ -304,7 +304,7 @@ class rhs_imex_dedalus_mesh(object):
     #     if not A.shape[1] == self.expl.values.shape[0]:
     #         raise DataError("ERROR: cannot apply operator %s to %s" % (A, self.expl))
     #
-    #     me = rhs_imex_dedalus_mesh(self.domain)
+    #     me = rhs_imex_dedalus_field(self.domain)
     #     me.impl.values['g'] = A.dot(self.impl.values['g'])
     #     me.expl.values['g'] = A.dot(self.expl.values['g'])
     #

@@ -5,14 +5,14 @@ from dedalus import public as de
 from pySDC.core.Problem import ptype
 from pySDC.core.Errors import ParameterError, ProblemError
 
-from pySDC.playgrounds.Dedalus.dedalus_mesh import dedalus_mesh, rhs_imex_dedalus_mesh
+from pySDC.playgrounds.Dedalus.dedalus_field import dedalus_field, rhs_imex_dedalus_field
 
 
 class heat1d_dedalus_forced(ptype):
     """
     Example implementing the forced 1D heat equation with periodic BC in [0,1], discretized using Dedalus
     """
-    def __init__(self, problem_params, dtype_u=dedalus_mesh, dtype_f=rhs_imex_dedalus_mesh):
+    def __init__(self, problem_params, dtype_u=dedalus_field, dtype_f=rhs_imex_dedalus_field):
         """
         Initialization routine
 
@@ -46,6 +46,7 @@ class heat1d_dedalus_forced(ptype):
         self.problem.parameters['nu'] = self.params.nu
         self.problem.add_equation("dt(u) - nu * dx(dx(u)) = 0")
         self.solver = self.problem.build_solver(de.timesteppers.SBDF1)
+        self.u = self.solver.state['u']
 
     def eval_f(self, u, t):
         """
@@ -78,13 +79,13 @@ class heat1d_dedalus_forced(ptype):
             dtype_u: solution as mesh
         """
 
-        u = self.solver.state['u']
-        u['g'] = rhs.values['g']
+        # u = self.solver.state['u']
+        self.u['g'] = rhs.values['g']
 
         self.solver.step(factor)
 
         me = self.dtype_u(self.init)
-        me.values['g'] = u['g']
+        me.values['g'] = self.u['g']
 
         return me
 
