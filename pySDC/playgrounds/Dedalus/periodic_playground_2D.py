@@ -7,7 +7,7 @@ from pySDC.implementations.controller_classes.controller_nonMPI import controlle
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 
 from pySDC.playgrounds.Dedalus.TransferDedalusFields import dedalus_field_transfer
-from pySDC.playgrounds.Dedalus.HeatEquation_1D_Dedalus_forced import heat1d_dedalus_forced
+from pySDC.playgrounds.Dedalus.HeatEquation_2D_Dedalus_forced import heat2d_dedalus_forced
 
 
 def main():
@@ -32,7 +32,7 @@ def main():
     problem_params = dict()
     problem_params['nu'] = 0.1  # diffusion coefficient
     problem_params['freq'] = 2  # frequency for the test value
-    problem_params['nvars'] = [16, 4]  # number of degrees of freedom for each level
+    problem_params['nvars'] = [(16, 16), (4, 4)]  # number of degrees of freedom for each level
 
     # initialize step parameters
     step_params = dict()
@@ -45,7 +45,7 @@ def main():
 
     # fill description dictionary for easy step instantiation
     description = dict()
-    description['problem_class'] = heat1d_dedalus_forced
+    description['problem_class'] = heat2d_dedalus_forced
     description['problem_params'] = problem_params  # pass problem parameters
     description['sweeper_class'] = imex_1st_order
     description['sweeper_params'] = sweeper_params  # pass sweeper parameters
@@ -97,7 +97,6 @@ def main():
     out = '   Std and var for number of iterations: %4.2f -- %4.2f' % (float(np.std(niters)), float(np.var(niters)))
     print(out)
 
-    print('CFL number: %4.2f' % (level_params['dt'] * problem_params['nu'] / (1.0 / problem_params['nvars'][0])**2))
     print('Error: %8.4e' % err)
 
 

@@ -44,7 +44,6 @@ def main():
     problem_params['nu'] = 0.1  # diffusion coefficient
     problem_params['freq'] = 2  # frequency for the test value
     problem_params['nvars'] = [16, 4]  # number of degrees of freedom for each level
-    problem_params['scale'] = [1]  #
     problem_params['comm'] = space_comm
 
     # initialize step parameters

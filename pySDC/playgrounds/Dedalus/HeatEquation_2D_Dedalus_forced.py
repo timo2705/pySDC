@@ -8,9 +8,9 @@ from pySDC.core.Errors import ParameterError, ProblemError
 from pySDC.playgrounds.Dedalus.dedalus_field import dedalus_field, rhs_imex_dedalus_field
 
 
-class heat1d_dedalus_forced(ptype):
+class heat2d_dedalus_forced(ptype):
     """
-    Example implementing the forced 1D heat equation with periodic BC in [0,1], discretized using Dedalus
+    Example implementing the forced 2D heat equation with periodic BC in [0,1], discretized using Dedalus
     """
     def __init__(self, problem_params, dtype_u=dedalus_field, dtype_f=rhs_imex_dedalus_field):
         """
@@ -36,18 +36,20 @@ class heat1d_dedalus_forced(ptype):
         if problem_params['freq'] % 2 != 0:
             raise ProblemError('setup requires freq to be an equal number')
 
-        xbasis = de.Fourier('x', problem_params['nvars'], interval=(0, 1), dealias=1)
-        domain = de.Domain([xbasis], grid_dtype=np.float64, comm=problem_params['comm'])
+        xbasis = de.Fourier('x', problem_params['nvars'][0], interval=(0, 1), dealias=1)
+        ybasis = de.Fourier('y', problem_params['nvars'][1], interval=(0, 1), dealias=1)
+        domain = de.Domain([xbasis, ybasis], grid_dtype=np.float64, comm=problem_params['comm'])
 
         # invoke super init, passing number of dofs, dtype_u and dtype_f
-        super(heat1d_dedalus_forced, self).__init__(init=domain, dtype_u=dtype_u, dtype_f=dtype_f,
+        super(heat2d_dedalus_forced, self).__init__(init=domain, dtype_u=dtype_u, dtype_f=dtype_f,
                                                     params=problem_params)
 
         self.x = self.init.grid(0, scales=1)
+        self.y = self.init.grid(1, scales=1)
         self.rhs = self.dtype_u(self.init, val=0.0)
         self.problem = de.IVP(domain=self.init, variables=['u'])
         self.problem.parameters['nu'] = self.params.nu
-        self.problem.add_equation("dt(u) - nu * dx(dx(u)) = 0")
+        self.problem.add_equation("dt(u) - nu * dx(dx(u)) - nu * dy(dy(u)) = 0")
         self.solver = self.problem.build_solver(de.timesteppers.SBDF1)
         self.u = self.solver.state['u']
 
@@ -64,8 +66,10 @@ class heat1d_dedalus_forced(ptype):
         """
 
         f = self.dtype_f(self.init)
-        f.impl.values = (self.params.nu * de.operators.differentiate(u.values, x=2)).evaluate()
-        f.expl.values['g'] = -np.sin(np.pi * self.params.freq * self.x) * (np.sin(t) - self.params.nu * (np.pi * self.params.freq) ** 2 * np.cos(t))
+        f.impl.values = (self.params.nu * de.operators.differentiate(u.values, x=2) +
+                         self.params.nu * de.operators.differentiate(u.values, y=2)).evaluate()
+        f.expl.values['g'] = -np.sin(np.pi * self.params.freq * self.x) * np.sin(np.pi * self.params.freq * self.y) * \
+                             (np.sin(t) - 2.0 * self.params.nu * (np.pi * self.params.freq) ** 2 * np.cos(t))
         return f
 
     def solve_system(self, rhs, factor, u0, t):
@@ -104,5 +108,6 @@ class heat1d_dedalus_forced(ptype):
         """
 
         me = self.dtype_u(self.init)
-        me.values['g'] = np.sin(np.pi * self.params.freq * self.x) * np.cos(t)
+        me.values['g'] = np.sin(np.pi * self.params.freq * self.x) * np.sin(np.pi * self.params.freq * self.y) * \
+            np.cos(t)
         return me
