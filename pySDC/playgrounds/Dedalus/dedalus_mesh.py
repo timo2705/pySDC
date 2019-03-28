@@ -34,9 +34,9 @@ class dedalus_mesh(object):
             self.values = init.new_field()
             self.values['g'][:] = val
         elif isinstance(init, type(self)):
-            self.values = init.domain.new_field()
-            self.values['g'] = np.copy(init.values['g'])
             self.domain = init.domain
+            self.values = self.domain.new_field()
+            self.values['g'] = np.copy(init.values['g'])
         else:
             raise DataError('something went wrong during %s initialization' % type(self))
 

@@ -84,7 +84,7 @@ class heat1d_dedalus_forced(ptype):
         self.solver.step(factor)
 
         me = self.dtype_u(self.init)
-        me.values = u
+        me.values['g'] = u['g']
 
         return me
 

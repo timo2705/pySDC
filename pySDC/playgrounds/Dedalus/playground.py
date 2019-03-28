@@ -5,12 +5,23 @@ import matplotlib.pyplot as plt
 
 de.logging_setup.rootlogger.setLevel('INFO')
 
-xbasis = de.Fourier('x', 32, interval=(0,1), dealias=1)
+xbasis = de.Fourier('x', 8, interval=(0,1), dealias=1)
 
 
 domain = de.Domain([xbasis],grid_dtype=np.float64,mesh=[1])
 
 f = domain.new_field()
+f['g'][:] = 1.0
+
+domain_2 = domain
+
+f2 = domain_2.new_field()
+f2['g'][:] = 2.0
+
+print(f['g'])
+print(f2['g'])
+
+exit()
 
 g = domain.new_field()
 

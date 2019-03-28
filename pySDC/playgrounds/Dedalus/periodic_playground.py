@@ -17,7 +17,7 @@ def main():
     # initialize level parameters
     level_params = dict()
     level_params['restol'] = 1E-08
-    level_params['dt'] = 1.0
+    level_params['dt'] = 1.0 / 2
     level_params['nsweeps'] = [1]
 
     # initialize sweeper parameters
