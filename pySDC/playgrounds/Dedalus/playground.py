@@ -1,35 +1,28 @@
-from mpi4py import MPI
 
 from dedalus import public as de
 import numpy as np
 import matplotlib.pyplot as plt
 
 
-
-comm = MPI.COMM_WORLD
-
-world_rank = comm.Get_rank()
-# split world communicator to create space-communicators
-color = int(world_rank / 1)
-space_comm = comm.Split(color=color)
-space_size = space_comm.Get_size()
-space_rank = space_comm.Get_rank()
-
 de.logging_setup.rootlogger.setLevel('INFO')
 
 xbasis = de.Fourier('x', 8, interval=(0,1), dealias=1)
 
 
-domain = de.Domain([xbasis], grid_dtype=np.float64, comm=space_comm)
-domain_2 = de.Domain([xbasis], grid_dtype=np.float64, comm=space_comm)
+domain = de.Domain([xbasis], grid_dtype=np.float64, comm=None)
+domain_2 = de.Domain([xbasis], grid_dtype=np.float64, comm=None)
 
 print(domain.global_grid_shape(), domain.local_grid_shape())
 
 f = domain.new_field()
+g = domain.new_field()
 
-g = domain_2.new_field()
+f2 = domain_2.new_field()
 
-print(f + g)
+try:
+    print(f + f2)
+except ValueError:
+    print('Non-unique domains')
 
 x = domain.grid(0, scales=1)
 
@@ -40,7 +33,7 @@ g['g'] = np.cos(2*np.pi*x)
 u = domain.new_field()
 
 xbasis_c = de.Fourier('x', 4, interval=(0,1), dealias=1)
-domain_c = de.Domain([xbasis_c],grid_dtype=np.float64, comm=space_comm)
+domain_c = de.Domain([xbasis_c],grid_dtype=np.float64, comm=None)
 
 fex = domain.new_field()
 fex['g'] = np.copy(f['g'])
@@ -52,17 +45,12 @@ ff.set_scales(scales=0.5)
 fc = domain_c.new_field()
 fc['g'] = ff['g']
 
-if comm.Get_rank() == 0:
-    comm.send(fc['g'], dest=1, tag=1)
-else:
-    fc['g'] = comm.recv(source=0, tag=1)
-
 
 print(fc['g'].shape, fex['g'].shape)
 #
 # print((fc-fex).evaluate()['g'])
 
-exit()
+# exit()
 
 h = (f + g).evaluate()
 
@@ -114,10 +102,10 @@ print(np.linalg.norm(u['g']-uex['g'], np.inf))
 #
 # exit()
 
-forcing = domain.new_field()
-forcing['g'] = -np.sin(np.pi * 2 * x) * (np.sin(0) - (np.pi * 2) ** 2 * np.cos(0))
+# forcing = domain.new_field()
+# forcing['g'] = -np.sin(np.pi * 2 * x) * (np.sin(0) - (np.pi * 2) ** 2 * np.cos(0))
 
-u_old['g'] = np.zeros(32)
+# u_old['g'] = np.zeros(domain.global_grid_shape())
 problem = de.IVP(domain=domain, variables=['u'])
 # problem.parameters['RHS'] = u_old + forcing
 problem.parameters['RHS'] = 0
@@ -126,7 +114,7 @@ problem.add_equation("dt(u) - dx(dx(u)) = RHS")
 ts = de.timesteppers.SBDF1
 solver = problem.build_solver(ts)
 u = solver.state['u']
-u_old['g'] = np.copy(f['g'])
+# u_old['g'] = np.copy(f['g'])
 
 t = 0.0
 for n in range(nsteps):

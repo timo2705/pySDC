@@ -1,4 +1,5 @@
 import numpy as np
+from mpi4py import MPI
 
 from dedalus import public as de
 
@@ -109,9 +110,18 @@ class dedalus_field(object):
         """
 
         # take absolute values of the mesh values
-        absval = np.linalg.norm(self.values['g'], np.inf)
+        local_absval = np.amax(abs(self.values['g']))
 
-        return absval
+        comm = self.domain.distributor.comm
+        if comm is not None:
+            if comm.Get_size() > 1:
+                global_absval = comm.allreduce(sendobj=local_absval, op=MPI.MAX)
+            else:
+                global_absval = local_absval
+        else:
+            global_absval = local_absval
+
+        return global_absval
 
     def apply_mat(self, A):
         """
