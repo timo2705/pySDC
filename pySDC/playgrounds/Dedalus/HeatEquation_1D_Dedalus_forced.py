@@ -22,8 +22,11 @@ class heat1d_dedalus_forced(ptype):
             dtype_f: mesh data type (will be passed parent class)
         """
 
+        if 'comm' not in problem_params:
+            problem_params['comm'] = None
+
         # these parameters will be used later, so assert their existence
-        essential_keys = ['nvars', 'nu', 'freq', 'scale']
+        essential_keys = ['nvars', 'nu', 'freq', 'scale', 'comm']
         for key in essential_keys:
             if key not in problem_params:
                 msg = 'need %s to instantiate problem, only got %s' % (key, str(problem_params.keys()))
@@ -34,7 +37,7 @@ class heat1d_dedalus_forced(ptype):
             raise ProblemError('setup requires freq to be an equal number')
 
         xbasis = de.Fourier('x', problem_params['nvars'], interval=(0, 1), dealias=1)
-        domain = de.Domain([xbasis], grid_dtype=np.float64, mesh=[1])
+        domain = de.Domain([xbasis], grid_dtype=np.float64, comm=problem_params['comm'])
 
         # invoke super init, passing number of dofs, dtype_u and dtype_f
         super(heat1d_dedalus_forced, self).__init__(init=domain, dtype_u=dtype_u, dtype_f=dtype_f,
