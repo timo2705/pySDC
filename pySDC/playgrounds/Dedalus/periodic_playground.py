@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 
 from pySDC.helpers.stats_helper import filter_stats, sort_stats
 from pySDC.implementations.collocation_classes.gauss_radau_right import CollGaussRadau_Right
@@ -16,7 +17,7 @@ def main():
     # initialize level parameters
     level_params = dict()
     level_params['restol'] = 1E-08
-    level_params['dt'] = 1.0 / 2
+    level_params['dt'] = 1.0
     level_params['nsweeps'] = [1]
 
     # initialize sweeper parameters
@@ -28,9 +29,9 @@ def main():
 
     # initialize problem parameters
     problem_params = dict()
-    problem_params['nu'] = 1.0  # diffusion coefficient
-    problem_params['freq'] = 4  # frequency for the test value
-    problem_params['nvars'] = [128]  # number of degrees of freedom for each level
+    problem_params['nu'] = 0.1  # diffusion coefficient
+    problem_params['freq'] = 2  # frequency for the test value
+    problem_params['nvars'] = [16]  # number of degrees of freedom for each level
     problem_params['scale'] = [1]  #
 
     # initialize step parameters
@@ -72,6 +73,7 @@ def main():
     # compute exact solution and compare
     uex = P.u_exact(Tend)
     err = abs(uex - uend)
+
 
     # filter statistics by type (number of iterations)
     filtered_stats = filter_stats(stats, type='niter')

@@ -37,11 +37,6 @@ class dedalus_mesh(object):
             self.values = init.domain.new_field()
             self.values['g'] = np.copy(init.values['g'])
             self.domain = init.domain
-        # if init is a number or a tuple of numbers, create mesh object with val as initial value
-        # elif isinstance(init, tuple) or isinstance(init, int):
-        #     self.values = np.empty(init, dtype=np.float64)
-        #     self.values[:] = val
-        # something is wrong, if none of the ones above hit
         else:
             raise DataError('something went wrong during %s initialization' % type(self))
 
@@ -115,7 +110,7 @@ class dedalus_mesh(object):
 
         # take absolute values of the mesh values
         absval = np.linalg.norm(self.values['g'], np.inf)
-        # return maximum
+
         return absval
 
     def apply_mat(self, A):
@@ -131,7 +126,7 @@ class dedalus_mesh(object):
         if not A.shape[1] == self.values.shape[0]:
             raise DataError("ERROR: cannot apply operator %s to %s" % (A.shape[1], self))
 
-        me = self.domain.new_field()
+        me = dedalus_mesh(self)
         me.values['g'] = A.dot(self.values['g'])
 
         return me
@@ -227,95 +222,90 @@ class rhs_imex_dedalus_mesh(object):
             self.domain = init
             self.impl = dedalus_mesh(init, val=val)
             self.expl = dedalus_mesh(init, val=val)
-        # if init is a number or a tuple of numbers, create mesh object with None as initial value
-        # elif isinstance(init, tuple) or isinstance(init, int):
-        #     self.impl = dedalus_mesh(init, val=val)
-        #     self.expl = dedalus_mesh(init, val=val)
-        # something is wrong, if none of the ones above hit
         else:
             raise DataError('something went wrong during %s initialization' % type(self))
 
-    def __sub__(self, other):
-        """
-        Overloading the subtraction operator for rhs types
-
-        Args:
-            other (mesh.rhs_imex_mesh): rhs object to be subtracted
-        Raises:
-            DataError: if other is not a rhs object
-        Returns:
-            mesh.rhs_imex_mesh: differences between caller and other values (self-other)
-        """
-
-        if isinstance(other, rhs_imex_dedalus_mesh):
-            # always create new rhs_imex_mesh, since otherwise c = a - b changes a as well!
-            me = rhs_imex_dedalus_mesh(self.domain)
-            me.impl.values = self.impl.values - other.impl.values
-            me.expl.values = self.expl.values - other.expl.values
-            return me
-        else:
-            raise DataError("Type error: cannot subtract %s from %s" % (type(other), type(self)))
-
-    def __add__(self, other):
-        """
-         Overloading the addition operator for rhs types
-
-        Args:
-            other (mesh.rhs_imex_mesh): rhs object to be added
-        Raises:
-            DataError: if other is not a rhs object
-        Returns:
-            mesh.rhs_imex_mesh: sum of caller and other values (self-other)
-        """
-
-        if isinstance(other, rhs_imex_dedalus_mesh):
-            # always create new rhs_imex_mesh, since otherwise c = a + b changes a as well!
-            me = rhs_imex_dedalus_mesh(self.domain)
-            me.impl.values = (self.impl.values + other.impl.values).evaluate()
-            me.expl.values = (self.expl.values + other.expl.values).evaluate()
-            return me
-        else:
-            raise DataError("Type error: cannot add %s to %s" % (type(other), type(self)))
-
-    def __rmul__(self, other):
-        """
-        Overloading the right multiply by factor operator for mesh types
-
-        Args:
-            other (float): factor
-        Raises:
-            DataError: is other is not a float
-        Returns:
-             mesh.rhs_imex_mesh: copy of original values scaled by factor
-        """
-
-        if isinstance(other, float):
-            # always create new rhs_imex_mesh
-            me = rhs_imex_dedalus_mesh(self.domain)
-            me.impl.values = other * self.impl
-            me.expl.values = other * self.expl
-            return me
-        else:
-            raise DataError("Type error: cannot multiply %s to %s" % (type(other), type(self)))
-
-    def apply_mat(self, A):
-        """
-        Matrix multiplication operator
-
-        Args:
-            A: a matrix
-
-        Returns:
-            mesh.rhs_imex_mesh: each component multiplied by the matrix A
-        """
-
-        if not A.shape[1] == self.impl.values.shape[0]:
-            raise DataError("ERROR: cannot apply operator %s to %s" % (A, self.impl))
-        if not A.shape[1] == self.expl.values.shape[0]:
-            raise DataError("ERROR: cannot apply operator %s to %s" % (A, self.expl))
-
-        me = rhs_imex_dedalus_mesh(self.domain)
-        me.impl.values['g'] = A.dot(self.impl.values['g'])
-        me.expl.values['g'] = A.dot(self.expl.values['g'])
-
-        return me
+    # def __sub__(self, other):
+    #     """
+    #     Overloading the subtraction operator for rhs types
+    #
+    #     Args:
+    #         other (mesh.rhs_imex_mesh): rhs object to be subtracted
+    #     Raises:
+    #         DataError: if other is not a rhs object
+    #     Returns:
+    #         mesh.rhs_imex_mesh: differences between caller and other values (self-other)
+    #     """
+    #
+    #     if isinstance(other, rhs_imex_dedalus_mesh):
+    #         # always create new rhs_imex_mesh, since otherwise c = a - b changes a as well!
+    #         me = rhs_imex_dedalus_mesh(self.domain)
+    #         me.impl.values = self.impl.values - other.impl.values
+    #         me.expl.values = self.expl.values - other.expl.values
+    #         return me
+    #     else:
+    #         raise DataError("Type error: cannot subtract %s from %s" % (type(other), type(self)))
+    #
+    # def __add__(self, other):
+    #     """
+    #      Overloading the addition operator for rhs types
+    #
+    #     Args:
+    #         other (mesh.rhs_imex_mesh): rhs object to be added
+    #     Raises:
+    #         DataError: if other is not a rhs object
+    #     Returns:
+    #         mesh.rhs_imex_mesh: sum of caller and other values (self-other)
+    #     """
+    #
+    #     if isinstance(other, rhs_imex_dedalus_mesh):
+    #         # always create new rhs_imex_mesh, since otherwise c = a + b changes a as well!
+    #         me = rhs_imex_dedalus_mesh(self.domain)
+    #         me.impl.values = self.impl.values + other.impl.values
+    #         me.expl.values = self.expl.values + other.expl.values
+    #         return me
+    #     else:
+    #         raise DataError("Type error: cannot add %s to %s" % (type(other), type(self)))
+    #
+    # def __rmul__(self, other):
+    #     """
+    #     Overloading the right multiply by factor operator for mesh types
+    #
+    #     Args:
+    #         other (float): factor
+    #     Raises:
+    #         DataError: is other is not a float
+    #     Returns:
+    #          mesh.rhs_imex_mesh: copy of original values scaled by factor
+    #     """
+    #
+    #     if isinstance(other, float):
+    #         # always create new rhs_imex_mesh
+    #         me = rhs_imex_dedalus_mesh(self.domain)
+    #         me.impl = other * self.impl
+    #         me.expl = other * self.expl
+    #         return me
+    #     else:
+    #         raise DataError("Type error: cannot multiply %s to %s" % (type(other), type(self)))
+    #
+    # def apply_mat(self, A):
+    #     """
+    #     Matrix multiplication operator
+    #
+    #     Args:
+    #         A: a matrix
+    #
+    #     Returns:
+    #         mesh.rhs_imex_mesh: each component multiplied by the matrix A
+    #     """
+    #
+    #     if not A.shape[1] == self.impl.values.shape[0]:
+    #         raise DataError("ERROR: cannot apply operator %s to %s" % (A, self.impl))
+    #     if not A.shape[1] == self.expl.values.shape[0]:
+    #         raise DataError("ERROR: cannot apply operator %s to %s" % (A, self.expl))
+    #
+    #     me = rhs_imex_dedalus_mesh(self.domain)
+    #     me.impl.values['g'] = A.dot(self.impl.values['g'])
+    #     me.expl.values['g'] = A.dot(self.expl.values['g'])
+    #
+    #     return me

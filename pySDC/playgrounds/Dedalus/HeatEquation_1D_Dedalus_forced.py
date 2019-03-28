@@ -45,8 +45,7 @@ class heat1d_dedalus_forced(ptype):
         self.problem = de.IVP(domain=self.init, variables=['u'])
         self.problem.parameters['nu'] = self.params.nu
         self.problem.add_equation("dt(u) - nu * dx(dx(u)) = 0")
-        ts = de.timesteppers.SBDF1
-        self.solver = self.problem.build_solver(ts)
+        self.solver = self.problem.build_solver(de.timesteppers.SBDF1)
 
     def eval_f(self, u, t):
         """
@@ -62,7 +61,7 @@ class heat1d_dedalus_forced(ptype):
 
         f = self.dtype_f(self.init)
         f.impl.values = (self.params.nu * de.operators.differentiate(u.values, x=2)).evaluate()
-        f.expl.values['g'] = -np.sin(np.pi * self.params.freq * self.x) * (np.sin(t) - (np.pi * self.params.freq) ** 2 * np.cos(t))
+        f.expl.values['g'] = -np.sin(np.pi * self.params.freq * self.x) * (np.sin(t) - self.params.nu * (np.pi * self.params.freq) ** 2 * np.cos(t))
         return f
 
     def solve_system(self, rhs, factor, u0, t):
@@ -79,21 +78,13 @@ class heat1d_dedalus_forced(ptype):
             dtype_u: solution as mesh
         """
 
+        u = self.solver.state['u']
+        u['g'] = rhs.values['g']
+
+        self.solver.step(factor)
+
         me = self.dtype_u(self.init)
-
-        if factor != 0.0:
-
-            u = self.solver.state['u']
-
-            u['g'] = rhs.values['g']
-
-            self.solver.step(factor)
-
-            me.values = u
-
-        else:
-
-            me.values = rhs.values
+        me.values = u
 
         return me
 
