@@ -32,8 +32,8 @@ def setup_parameters():
     # initialize level parameters
     level_params = dict()
     level_params['restol'] = 1E-08
-    level_params['dt'] = 1E-02
-    level_params['nsweeps'] = [3, 1]
+    level_params['dt'] = 1E-03
+    level_params['nsweeps'] = [1]
 
     # initialize sweeper parameters
     sweeper_params = dict()
@@ -47,8 +47,8 @@ def setup_parameters():
     problem_params = dict()
     problem_params['nu'] = 2
     problem_params['L'] = 1.0
-    problem_params['nvars'] = [(256, 256), (64, 64)]
-    problem_params['eps'] = [0.04, 0.16]
+    problem_params['nvars'] = [(512, 512)]#, (64, 64)]
+    problem_params['eps'] = [0.04]#, 0.16]
     problem_params['radius'] = 0.25
 
     # initialize step parameters
@@ -100,7 +100,7 @@ def run_SDC_variant(variant=None):
 
     # setup parameters "in time"
     t0 = 0.0
-    Tend = 0.02
+    Tend = 0.001
 
     # set MPI communicator
     comm = MPI.COMM_WORLD
@@ -184,7 +184,7 @@ def main(cwd=''):
 
     # Loop over variants, exact and inexact solves
     results = {}
-    for variant in ['semi-implicit-stab']:
+    for variant in ['semi-implicit']:
 
         results[(variant, 'exact')] = run_SDC_variant(variant=variant)
 
