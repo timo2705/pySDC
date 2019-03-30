@@ -44,12 +44,12 @@ class imex_1st_order(sweeper):
 
         # get current level and problem description
         L = self.level
-        P = L.prob
 
         me = []
 
         # integrate RHS over all collocation nodes
         for m in range(1, self.coll.num_nodes + 1):
+            # new instance of dtype_u, initialize values with 0
             me.append(L.dt * self.coll.Qmat[m, 1] * (L.f[1].impl + L.f[1].expl))
             for j in range(2, self.coll.num_nodes + 1):
                 me[-1] += L.dt * self.coll.Qmat[m, j] * (L.f[j].impl + L.f[j].expl)
@@ -92,7 +92,7 @@ class imex_1st_order(sweeper):
         # do the sweep
         for m in range(0, M):
             # build rhs, consisting of the known values from above and new values from previous nodes (at k+1)
-            rhs = integral[m]
+            rhs = P.dtype_u(integral[m])
             for j in range(1, m + 1):
                 rhs += L.dt * (self.QI[m + 1, j] * L.f[j].impl + self.QE[m + 1, j] * L.f[j].expl)
 

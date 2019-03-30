@@ -88,6 +88,7 @@ class heat2d_dedalus_forced(ptype):
 
         # u = self.solver.state['u']
         self.u['g'] = rhs.values['g']
+        self.u['c'] = rhs.values['c']
 
         self.solver.step(factor)
 

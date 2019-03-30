@@ -89,12 +89,18 @@ class allencahn2d_dedalus(ptype):
         """
 
         # u = self.solver.state['u']
+
         self.u['g'] = rhs.values['g']
+        self.u['c'] = rhs.values['c']
 
         self.solver.step(factor)
 
         me = self.dtype_u(self.init)
         me.values['g'] = self.u['g']
+        # me.values['c'] = self.u['c']
+
+        # uxx = (de.operators.differentiate(self.u, x=2) + de.operators.differentiate(self.u, y=2)).evaluate()
+        # print(np.amax(abs(self.u['g'] - factor * uxx['g'] - rhs.values['g'])))
 
         return me
 
