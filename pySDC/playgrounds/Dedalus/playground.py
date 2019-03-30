@@ -15,6 +15,14 @@ domain_2 = de.Domain([xbasis], grid_dtype=np.float64, comm=None)
 print(domain.global_grid_shape(), domain.local_grid_shape())
 
 f = domain.new_field()
+g = de.operators.FieldCopyField(f).evaluate()
+
+print((f + g).evaluate())
+
+f['g'][:] = 1.0
+print(f['g'], g['g'])
+print(f, g)
+exit()
 g = domain.new_field()
 
 f2 = domain_2.new_field()

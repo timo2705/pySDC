@@ -47,10 +47,9 @@ class allencahn2d_dedalus(ptype):
 
         self.x = self.init.grid(0, scales=1)
         self.y = self.init.grid(1, scales=1)
-        self.rhs = self.dtype_u(self.init, val=0.0)
+        self.rhs = self.dtype_u(self.init)
         linear_problem = de.IVP(domain=self.init, variables=['u'])
-        linear_problem.parameters['nu'] = self.params.nu
-        linear_problem.add_equation("dt(u) - nu * dx(dx(u)) - nu * dy(dy(u)) = 0")
+        linear_problem.add_equation("dt(u) - dx(dx(u)) - dy(dy(u)) = 0")
         self.solver = linear_problem.build_solver(de.timesteppers.SBDF1)
         self.u = self.solver.state['u']
 
@@ -67,12 +66,12 @@ class allencahn2d_dedalus(ptype):
         """
 
         f = self.dtype_f(self.init)
-        f.impl.values = (self.params.nu * de.operators.differentiate(u.values, x=2) +
-                         self.params.nu * de.operators.differentiate(u.values, y=2)).evaluate()
+        f.impl.values = (de.operators.differentiate(u.values, x=2) +
+                         de.operators.differentiate(u.values, y=2)).evaluate()
         if self.params.eps > 0:
             f.expl.values['g'] = 1.0 / self.params.eps ** 2 * u.values['g'] * (1.0 - u.values['g'] ** self.params.nu)
         else:
-            f.expl.values['g'][:] = 0.0
+            raise NotImplementedError()
         return f
 
     def solve_system(self, rhs, factor, u0, t):

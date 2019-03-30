@@ -47,7 +47,7 @@ def setup_parameters():
     problem_params = dict()
     problem_params['nu'] = 2
     problem_params['L'] = 1.0
-    problem_params['nvars'] = [(512, 512)]#, (64, 64)]
+    problem_params['nvars'] = [(256, 256)]#, (64, 64)]
     problem_params['eps'] = [0.04]#, 0.16]
     problem_params['radius'] = 0.25
 
@@ -58,7 +58,7 @@ def setup_parameters():
     # initialize controller parameters
     controller_params = dict()
     controller_params['logger_level'] = 20
-    controller_params['hook_class'] = monitor
+    # controller_params['hook_class'] = monitor
 
     # fill description dictionary for easy step instantiation
     description = dict()
