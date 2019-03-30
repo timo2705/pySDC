@@ -21,7 +21,7 @@ from pySDC.playgrounds.Dedalus.dedalus_field import dedalus_field
 
 de.logging_setup.rootlogger.setLevel('INFO')
 
-xbasis = de.Fourier('x', 128, interval=(0,1), dealias=1)
+xbasis = de.Fourier('x', 16, interval=(0,1), dealias=1)
 
 
 domain = de.Domain([xbasis], grid_dtype=np.float64, comm=None)
@@ -30,6 +30,8 @@ domain_2 = de.Domain([xbasis], grid_dtype=np.float64, comm=None)
 print(domain.global_grid_shape(), domain.local_grid_shape())
 
 f = domain.new_field()
+fxx = xbasis.Differentiate(f)
+
 g = de.operators.FieldCopyField(f).evaluate()
 
 print((f + g).evaluate())
@@ -54,6 +56,11 @@ except ValueError:
 x = domain.grid(0, scales=1)
 
 f['g'] = np.sin(2*np.pi*x)
+print(fxx.evaluate()['g'])
+f['g'] = np.cos(2*np.pi*x)
+print(fxx.evaluate()['g'])
+exit()
+
 
 g['g'] = np.cos(2*np.pi*x)
 

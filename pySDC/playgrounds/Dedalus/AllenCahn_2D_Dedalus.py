@@ -52,6 +52,9 @@ class allencahn2d_dedalus(ptype):
         linear_problem.add_equation("dt(u) - dx(dx(u)) - dy(dy(u)) = 0")
         self.solver = linear_problem.build_solver(de.timesteppers.SBDF1)
         self.u = self.solver.state['u']
+        self.f = domain.new_field()
+        self.fxx = xbasis.Differentiate(xbasis.Differentiate(self.f)) + \
+            ybasis.Differentiate(ybasis.Differentiate(self.f))
 
     def eval_f(self, u, t):
         """
@@ -66,10 +69,13 @@ class allencahn2d_dedalus(ptype):
         """
 
         f = self.dtype_f(self.init)
-        f.impl.values = (de.operators.differentiate(u.values, x=2) +
-                         de.operators.differentiate(u.values, y=2)).evaluate()
+        self.f['g'] = u.values['g']
+        self.f['c'] = u.values['c']
+        f.impl.values = self.fxx.evaluate()
+
         if self.params.eps > 0:
             f.expl.values['g'] = 1.0 / self.params.eps ** 2 * u.values['g'] * (1.0 - u.values['g'] ** self.params.nu)
+            f.expl.values['c'] = 1.0 / self.params.eps ** 2 * u.values['c'] * (1.0 - u.values['c'] ** self.params.nu)
         else:
             raise NotImplementedError()
         return f
@@ -88,8 +94,6 @@ class allencahn2d_dedalus(ptype):
             dtype_u: solution as Dedalus field
         """
 
-        # u = self.solver.state['u']
-
         self.u['g'] = rhs.values['g']
         self.u['c'] = rhs.values['c']
 
@@ -97,7 +101,6 @@ class allencahn2d_dedalus(ptype):
 
         me = self.dtype_u(self.init)
         me.values['g'] = self.u['g']
-        # me.values['c'] = self.u['c']
 
         # uxx = (de.operators.differentiate(self.u, x=2) + de.operators.differentiate(self.u, y=2)).evaluate()
         # print(np.amax(abs(self.u['g'] - factor * uxx['g'] - rhs.values['g'])))
