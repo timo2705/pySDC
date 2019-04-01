@@ -56,6 +56,9 @@ class allencahn2d_dedalus(ptype):
         self.fxx = xbasis.Differentiate(xbasis.Differentiate(self.f)) + \
             ybasis.Differentiate(ybasis.Differentiate(self.f))
 
+        self.dx = L / len(self.x)
+        self.nvars = (len(self.x), len(self.y))
+
     def eval_f(self, u, t):
         """
         Routine to evaluate both parts of the RHS
@@ -75,7 +78,6 @@ class allencahn2d_dedalus(ptype):
 
         if self.params.eps > 0:
             f.expl.values['g'] = 1.0 / self.params.eps ** 2 * u.values['g'] * (1.0 - u.values['g'] ** self.params.nu)
-            f.expl.values['c'] = 1.0 / self.params.eps ** 2 * u.values['c'] * (1.0 - u.values['c'] ** self.params.nu)
         else:
             raise NotImplementedError()
         return f

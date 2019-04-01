@@ -11,6 +11,7 @@ from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 
 from pySDC.playgrounds.Dedalus.TransferDedalusFields import dedalus_field_transfer
 from pySDC.playgrounds.Dedalus.AllenCahn_2D_Dedalus import allencahn2d_dedalus
+from pySDC.playgrounds.Dedalus.AllenCahn_monitor import monitor
 
 
 def main():
@@ -62,7 +63,7 @@ def main():
     problem_params = dict()
     problem_params['nu'] = 2
     problem_params['L'] = 1.0
-    problem_params['nvars'] = [(128, 128)]#, (64, 64)]
+    problem_params['nvars'] = [(16,16)]#, (64, 64)]
     problem_params['eps'] = [0.04]
     problem_params['radius'] = 0.25
     problem_params['comm'] = space_comm
@@ -74,7 +75,7 @@ def main():
     # initialize controller parameters
     controller_params = dict()
     controller_params['logger_level'] = 20 if space_rank == 0 else 99  # set level depending on rank
-    # controller_params['hook_class'] = error_output
+    controller_params['hook_class'] = monitor
 
     # fill description dictionary for easy step instantiation
     description = dict()
@@ -89,7 +90,7 @@ def main():
 
     # set time parameters
     t0 = 0.0
-    Tend = 0.001
+    Tend = 27*0.001
 
     # instantiate controller
     controller = controller_MPI(controller_params=controller_params, description=description, comm=time_comm)
