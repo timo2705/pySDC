@@ -63,7 +63,7 @@ def main():
     problem_params = dict()
     problem_params['nu'] = 2
     problem_params['L'] = 1.0
-    problem_params['nvars'] = [(16,16)]#, (64, 64)]
+    problem_params['nvars'] = [(128, 128)]#, (64, 64)]
     problem_params['eps'] = [0.04]
     problem_params['radius'] = 0.25
     problem_params['comm'] = space_comm
