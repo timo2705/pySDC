@@ -1,40 +1,48 @@
 from pySDC.implementations.datatype_classes.mesh import mesh
 import numpy as np
 import time
+import copy as cp
 
 
-class wrapper(np.ndarray):
+class mydata():
 
-    def __init__(self, *args):
-        super(wrapper, self).__init__(*args)
-        self[:] = val
+    def __init__(self, init):
+        # self.values = init.values
+        if isinstance(init, type(self)):
+            self.values = init.values
+        elif isinstance(init, tuple) or isinstance(init, int):
+            self.values = np.zeros(init)
+        else:
+            raise NotImplementedError()
+
+    # def __init__(self, init):
+    #     # print(init)
+    #     self.values = np.zeros(init)
+    #
+    # @classmethod
+    # def fill(cls, values):
+    #     c = cls(len(values))
+    #     c.values = values
+
+    def __add__(self, other):
+        # s = mydata(len(self.values))
+        s = mydata(self)
+        # s += other.values
+        s.values = self.values + other.values
+        return s
 
 
 
-n = 128*128
+nruns = int(1E6)
 
+z = mydata(160)
+z.values[:] = 1
+y = mydata(160)
+y.values[:] = 1
 t0 = time.time()
-a = mesh(n, val=0)
-
-for i in range(10000):
-    b = mesh(n, val=1)
-    a += b
+for i in range(nruns):
+    z += y
 t1 = time.time()
+print(z.values[-1])
 print(t1-t0)
-
-t0 = time.time()
-a = np.zeros(n)
-b = np.zeros(n)
-b[:] = 1
-for i in range(10000):
-    a += b
-t1 = time.time()
-print(t1-t0)
-
-t0 = time.time()
-a = wrapper(shape=n, val=0)
-for i in range(10000):
-    b = wrapper(n, val=1)
-    a += b
-t1 = time.time()
-print(t1-t0)
+# print(y.values)
