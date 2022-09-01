@@ -11,7 +11,7 @@ import pickle
 
 name = 'pickle/ac-jusuf-pySDC-cpu_fft2.pickle'
 # name = 'pickle/ac-jusuf-pySDC-gpu_fft2.pickle'
-Ns = np.asarray([128, 256, 512, 1024, 2048])  # TODO: für Jusuf
+Ns = np.asarray([128, 256, 512, 1024, 2048])
 # Ns = np.asarray([128, 256, 512])  # for Home-PC
 
 # initialize time array for parameters

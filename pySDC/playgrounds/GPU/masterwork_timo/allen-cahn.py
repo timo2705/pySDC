@@ -13,7 +13,7 @@ name = 'pickle/ac-jusuf-pySDC-cpu_f2.pickle'
 # name = 'pickle/ac-jusuf-pySDC-gpu_f2.pickle'
 # name = 'pickle/ac-jusuf-pySDC-cpu_fft.pickle'
 # name = 'pickle/ac-jusuf-pySDC-gpu_fft.pickle'
-Ns = np.asarray([128, 256, 512, 1024, 2048])  # TODO: ersten Knoten rauslassen wegen massiver Setupzeit
+Ns = np.asarray([128, 256, 512, 1024, 2048])
 # Ns = np.asarray([128, 256, 512])
 times = np.zeros_like(Ns, dtype=float)
 setup = np.zeros_like(Ns, dtype=float)
