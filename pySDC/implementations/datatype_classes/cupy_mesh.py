@@ -10,6 +10,10 @@ except ImportError:
 class cupy_mesh:
     """
     cupy-based datatype
+    Attributes:
+            values: cupy.ndarray
+            _comm: MPI communicator or None
+
     """
 
     def __init__(self, init, val=0.0, offset=0, buffer=None, strides=None, order=None):
@@ -19,11 +23,6 @@ class cupy_mesh:
         Args:
             init: either another mesh or a tuple containing the dimensions and the dtype
             val: value to initialize
-
-        Attributes:
-            values: cupy.ndarray
-            _comm: MPI communicator or None
-
         """
         if isinstance(init, cupy_mesh):
             self.values = cp.ndarray(shape=init.values.shape, dtype=init.values.dtype, strides=strides, order=order)
