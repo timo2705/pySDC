@@ -17,7 +17,7 @@ problem_params = dict()
 problem_params['nu'] = 2
 problem_params['eps'] = 0.04
 problem_params['radius'] = 0.25
-problem_params['nvars'] = [(512, 512)]
+problem_params['nvars'] = [(256, 256)]
 problem_params['newton_maxiter'] = 100
 problem_params['newton_tol'] = 1E-08
 problem_params['lin_tol'] = 1E-10
@@ -64,7 +64,7 @@ description['step_params'] = step_params  # pass step parameters
 controller = controller_MPI(controller_params=controller_params, description=description, comm=comm)
 
 # get initial values on finest level
-P = controller.MS[0].levels[0].prob
+P = controller.S.levels[0].prob
 uinit = P.u_exact(t0)
 
 # call main function to get things done...
