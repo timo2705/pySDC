@@ -79,4 +79,4 @@ timing = sort_stats(filter_stats(stats, type='timing_run'), sortby='time')[0][1]
 # print('Laufzeit:', timing[0][1])
 maximum = comm.reduce(timing, op=MPI.MAX, root=0)
 if comm.rank == 0:
-    print(f'Since I am the root where the reduce was gathered, I know for a fact that the maximum is {maximum}!')
+    print(f'Since I am the root where the reduce was gathered, I know for a fact that the maximum is {maximum} seconds!')
