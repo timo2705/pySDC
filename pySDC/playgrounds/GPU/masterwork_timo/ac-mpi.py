@@ -69,5 +69,8 @@ uinit = P.u_exact(t0)
 
 # call main function to get things done...
 uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
-timing = sort_stats(filter_stats(stats, type='timing_run'), sortby='time')
-print('Laufzeit:', timing[0][1])
+timing = sort_stats(filter_stats(stats, type='timing_run'), sortby='time')[0][1]
+# print('Laufzeit:', timing[0][1])
+maximum = comm.reduce(timing, op=MPI.MAX, root=0)
+if comm.rank == 0:
+    print(f'Since I am the root where the reduce was gathered, I know for a fact that the maximum is {maximum}!')
