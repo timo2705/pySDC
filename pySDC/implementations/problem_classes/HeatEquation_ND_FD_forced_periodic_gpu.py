@@ -75,6 +75,8 @@ class heatNd_periodic(ptype):
         self.Id = csp.eye(self.params.nvars[0] ** self.params.ndim, format='csr')
         self.f_im = 0
         self.f_ex = 0
+        self.f_im_count = 0
+        self.f_ex_count = 0
 
     @staticmethod
     def __get_A(N, nu, dx, ndim, order):

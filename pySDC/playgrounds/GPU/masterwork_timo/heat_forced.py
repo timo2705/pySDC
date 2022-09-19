@@ -9,8 +9,8 @@ from pySDC.helpers.stats_helper import filter_stats, sort_stats
 import numpy as np
 import pickle
 
-name = 'pickle/heat-jusuf-pySDC-cpu2.pickle'
-# name = 'pickle/heat-jusuf-pySDC-gpu2.pickle'
+name = 'pickle/heat-jusuf-pySDC-cpu-count.pickle'
+# name = 'pickle/heat-jusuf-pySDC-gpu-count.pickle'
 Ns = np.asarray([16, 32, 64, 128, 256])
 D = 3
 # Ns = np.asarray([128, 256, 512])
@@ -20,6 +20,8 @@ cg = np.zeros_like(Ns, dtype=float)
 # cg_Count = np.zeros_like(Ns)
 f_im = np.zeros_like(Ns, dtype=float)
 f_ex = np.zeros_like(Ns, dtype=float)
+f_im_count = np.zeros_like(Ns)
+f_ex_count = np.zeros_like(Ns)
 # initialize problem parameters
 problem_params = dict()
 problem_params['nu'] = 1
@@ -94,6 +96,8 @@ for i, N in enumerate(Ns):
     # cg_Count[i] = P.lin_ncalls
     f_im[i] = P.f_im
     f_ex[i] = P.f_ex
+    f_im_count = P.f_im_count
+    f_ex_count = P.f_ex_count
 # write down stats to .pickle file
 data = {
     'Ns': Ns,
@@ -107,7 +111,9 @@ data = {
     'cg-time': cg,
     # 'cg-count': cg_Count,
     'f-time-imp': f_im,
-    'f-time-exp': f_ex
+    'f-time-exp': f_ex,
+    'f-count-imp': f_im_count,
+    'f-count-exp': f_ex_count
 
 }
 with open(name, 'wb') as f:
