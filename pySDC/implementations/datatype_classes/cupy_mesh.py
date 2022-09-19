@@ -182,3 +182,36 @@ class comp2_cupy_mesh(object):
         # something is wrong, if none of the ones above hit
         else:
             raise DataError('something went wrong during %s initialization' % type(self))
+
+
+class cupy_mesh11(cp.ndarray):
+    """
+        CuPy-based datatype for serial or parallel meshes.
+        """
+
+    def __new__(cls, init, val=0.0, offset=0, buffer=None, strides=None, order=None):
+        """
+        Instantiates new datatype. This ensures that even when manipulating data, the result is still a mesh.
+
+        Args:
+            init: either another mesh or a tuple containing the dimensions, the communicator and the dtype
+            val: value to initialize
+
+        Returns:
+            obj of type mesh
+
+        """
+        if isinstance(init, cupy_mesh11):
+            obj = cp.ndarray.__new__(cls, shape=init.shape, dtype=init.dtype, buffer=buffer, offset=offset,
+                                     strides=strides, order=order)
+            obj[:] = init[:]
+            obj._comm = init._comm
+        elif isinstance(init, tuple) and (init[1] is None or isinstance(init[1], MPI.Intracomm)) \
+                and isinstance(init[2], cp.dtype):
+            obj = cp.ndarray.__new__(cls, init[0], dtype=init[2], buffer=buffer, offset=offset,
+                                     strides=strides, order=order)
+            obj.fill(val)
+            obj._comm = init[1]
+        else:
+            raise NotImplementedError(type(init))
+        return obj
