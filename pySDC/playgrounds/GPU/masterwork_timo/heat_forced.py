@@ -9,8 +9,8 @@ from pySDC.helpers.stats_helper import filter_stats, sort_stats
 import numpy as np
 import pickle
 
-# name = 'pickle/heat-jusuf-pySDC-cpu-count.pickle'
-name = 'pickle/heat-jusuf-pySDC-gpu-count.pickle'
+# name = 'pickle/heat-jusuf-pySDC-cpu-count-2.pickle'
+name = 'pickle/heat-jusuf-pySDC-gpu-count-2.pickle'
 Ns = np.asarray([16, 32, 64, 128, 256])
 D = 3
 # Ns = np.asarray([128, 256, 512])
@@ -96,8 +96,8 @@ for i, N in enumerate(Ns):
     # cg_Count[i] = P.lin_ncalls
     f_im[i] = P.f_im
     f_ex[i] = P.f_ex
-    f_im_count = P.f_im_count
-    f_ex_count = P.f_ex_count
+    f_im_count[i] = P.f_im_count
+    f_ex_count[i] = P.f_ex_count
 # write down stats to .pickle file
 data = {
     'Ns': Ns,
