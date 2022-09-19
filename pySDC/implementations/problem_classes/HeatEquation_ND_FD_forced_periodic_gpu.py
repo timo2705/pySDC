@@ -141,6 +141,7 @@ class heatNd_periodic(ptype):
         f.impl[:] = self.A.dot(u.flatten()).reshape(self.params.nvars)
         ende = time.perf_counter()
         self.f_im += ende - start
+        self.f_im_count += 1
         start = time.perf_counter()
         if self.params.ndim == 1:
             f.expl[:] = cp.sin(np.pi * self.params.freq[0] * self.xv[0]) * (self.params.nu * np.pi ** 2 *
@@ -165,6 +166,7 @@ class heatNd_periodic(ptype):
                                                              cp.cos(t) - cp.sin(t))
         ende = time.perf_counter()
         self.f_ex += ende - start
+        self.f_ex_count += 1
         return f
 
     def solve_system(self, rhs, factor, u0, t):

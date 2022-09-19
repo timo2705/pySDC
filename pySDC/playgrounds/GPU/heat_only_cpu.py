@@ -33,12 +33,6 @@ sweeper_params['initial_guess'] = 'spread'
 step_params = dict()
 step_params['maxiter'] = 50
 
-# initialize space transfer parameters
-space_transfer_params = dict()
-space_transfer_params['rorder'] = 0
-space_transfer_params['iorder'] = 2
-space_transfer_params['periodic'] = True
-
 # setup parameters "in time"
 t0 = 0
 schritte = 8
@@ -56,8 +50,6 @@ description['sweeper_class'] = imex_1st_order  # pass sweeper
 description['sweeper_params'] = sweeper_params  # pass sweeper parameters
 description['level_params'] = level_params  # pass level parameters
 description['step_params'] = step_params  # pass step parameters
-# description['space_transfer_class'] = mesh_to_mesh  # pass spatial transfer class
-# description['space_transfer_params'] = space_transfer_params  # pass paramters for spatial transfer
 
 # instantiate controller
 controller = controller_nonMPI(num_procs=1, controller_params=controller_params, description=description)
@@ -70,3 +62,5 @@ uinit = P.u_exact(t0)
 uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
 timing = sort_stats(filter_stats(stats, type='timing_run'), sortby='time')
 print('Laufzeit:', timing[0][1])
+print(P.f_im_count)
+print(P.f_ex_count)
