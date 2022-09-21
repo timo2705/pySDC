@@ -66,6 +66,14 @@ print('Laufzeit:', timing_cpu[0][1])
 
 # change description dictionary for easy step instantiation for gpu
 description['problem_class'] = heat_gpu
+# fill description dictionary for easy step instantiation cpu
+# description = dict()
+# description['problem_class'] = heat_gpu
+# description['problem_params'] = problem_params  # pass problem parameters
+# description['sweeper_class'] = imex_1st_order  # pass sweeper
+# description['sweeper_params'] = sweeper_params  # pass sweeper parameters
+# description['level_params'] = level_params  # pass level parameters
+# description['step_params'] = step_params  # pass step parameters
 
 # instantiate controller cpu
 controller = controller_nonMPI(num_procs=1, controller_params=controller_params, description=description)
@@ -79,4 +87,4 @@ uend_gpu, stats_gpu = controller.run(u0=uinit, t0=t0, Tend=Tend)
 timing_gpu = sort_stats(filter_stats(stats_gpu, type='timing_run'), sortby='time')
 print('Laufzeit:', timing_gpu[0][1])
 
-assert abs(uend_gpu-uend_cpu) < 10E-15
+assert abs(uend_gpu.get()-uend_cpu) < 1E-15
