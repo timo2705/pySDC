@@ -202,19 +202,20 @@ class cupy_mesh11(cp.ndarray):
 
         """
         if isinstance(init, cupy_mesh11):
-            obj = cp.ndarray.__new__(cls, shape=init.shape, dtype=init.dtype, buffer=buffer, offset=offset,
-                                     strides=strides, order=order)
+            obj = cp.ndarray.__new__(cls, shape=init.shape, dtype=init.dtype, strides=strides, order=order)
             obj[:] = init[:]
-            obj._comm = init._comm
+            # obj._comm = init._comm
         elif isinstance(init, tuple) and (init[1] is None or isinstance(init[1], MPI.Intracomm)) \
                 and isinstance(init[2], cp.dtype):
-            obj = cp.ndarray.__new__(cls, init[0], dtype=init[2], buffer=buffer, offset=offset,
-                                     strides=strides, order=order)
+            obj = cp.ndarray.__new__(cls, init[0], dtype=init[2], strides=strides, order=order)
             obj.fill(val)
-            obj._comm = init[1]
+            # obj._comm = init[1]
         else:
             raise NotImplementedError(type(init))
         return obj
+
+    def __abs__(self):
+        return float(cp.amax(cp.ndarray.__abs__(self)))
 
 
 class imex_cupy_mesh11(object):
