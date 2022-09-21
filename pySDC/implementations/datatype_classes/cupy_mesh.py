@@ -215,3 +215,70 @@ class cupy_mesh11(cp.ndarray):
         else:
             raise NotImplementedError(type(init))
         return obj
+
+
+class imex_cupy_mesh11(object):
+    """
+    RHS data type for cupy_meshes with implicit and explicit components
+
+    This data type can be used to have RHS with 2 components (here implicit and explicit)
+
+    Attributes:
+        impl (cupy_mesh.cupy_mesh): implicit part
+        expl (cupy_mesh.cupy_mesh): explicit part
+    """
+
+    def __init__(self, init, val=0.0):
+        """
+        Initialization routine
+
+        Args:
+            init: can either be a tuple (one int per dimension) or a number (if only one dimension is requested)
+                  or another imex_cupy_mesh object
+            val (float): an initial number (default: 0.0)
+        Raises:
+            DataError: if init is none of the types above
+        """
+
+        if isinstance(init, type(self)):
+            self.impl = cupy_mesh11(init.impl)
+            self.expl = cupy_mesh11(init.expl)
+        elif isinstance(init, tuple) and (init[1] is None or isinstance(init[1], MPI.Intracomm)) \
+                and isinstance(init[2], cp.dtype):
+            self.impl = cupy_mesh11(init, val=val)
+            self.expl = cupy_mesh11(init, val=val)
+        # something is wrong, if none of the ones above hit
+        else:
+            raise DataError('something went wrong during %s initialization' % type(self))
+
+
+class comp2_cupy_mesh11(object):
+    """
+    RHS data type for cupy_meshes with 2 components
+
+    Attributes:
+        comp1 (cupy_mesh.cupy_mesh): first part
+        comp2 (cupy_mesh.cupy_mesh): second part
+    """
+
+    def __init__(self, init, val=0.0):
+        """
+        Initialization routine
+
+        Args:
+            init: can either be a tuple (one int per dimension) or a number (if only one dimension is requested)
+                  or another comp2_mesh object
+        Raises:
+            DataError: if init is none of the types above
+        """
+
+        if isinstance(init, type(self)):
+            self.comp1 = cupy_mesh11(init.comp1)
+            self.comp2 = cupy_mesh11(init.comp2)
+        elif isinstance(init, tuple) and (init[1] is None or isinstance(init[1], MPI.Intracomm)) \
+                and isinstance(init[2], cp.dtype):
+            self.comp1 = cupy_mesh11(init, val=val)
+            self.comp2 = cupy_mesh11(init, val=val)
+        # something is wrong, if none of the ones above hit
+        else:
+            raise DataError('something went wrong during %s initialization' % type(self))
