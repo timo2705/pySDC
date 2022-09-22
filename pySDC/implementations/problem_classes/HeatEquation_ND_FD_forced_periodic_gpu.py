@@ -6,9 +6,9 @@ import time
 
 from pySDC.core.Errors import ParameterError, ProblemError
 from pySDC.core.Problem import ptype
-# from pySDC.implementations.datatype_classes.cupy_mesh import cupy_mesh, imex_cupy_mesh
-from pySDC.implementations.datatype_classes.cupy_mesh import cupy_mesh11 as cupy_mesh
-from pySDC.implementations.datatype_classes.cupy_mesh import imex_cupy_mesh11 as imex_cupy_mesh
+from pySDC.implementations.datatype_classes.cupy_mesh import cupy_mesh, imex_cupy_mesh
+# from pySDC.implementations.datatype_classes.cupy_mesh import cupy_mesh11 as cupy_mesh
+# from pySDC.implementations.datatype_classes.cupy_mesh import imex_cupy_mesh11 as imex_cupy_mesh
 
 
 # noinspection PyUnusedLocal
