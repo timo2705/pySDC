@@ -214,6 +214,23 @@ class cupy_mesh11(cp.ndarray):
             raise NotImplementedError(type(init))
         return obj
 
+    def __array_ufunc__(self, ufunc, method, *inputs, out=None, **kwargs):
+        """
+        Overriding default ufunc, cf. https://numpy.org/doc/stable/user/basics.subclassing.html#array-ufunc-for-ufuncs
+        """
+        args = []
+        # comm = None
+        for _, input_ in enumerate(inputs):
+            if isinstance(input_, cupy_mesh11):
+                args.append(input_.view(cp.ndarray))
+                # comm = input_.comm
+            else:
+                args.append(input_)
+        results = super(cupy_mesh11, self).__array_ufunc__(ufunc, method, *args, **kwargs).view(cupy_mesh11)
+        # if not method == 'reduce':
+        #     results._comm = comm
+        return results
+
     def __abs__(self):
         return float(cp.amax(cp.ndarray.__abs__(self)))
 
