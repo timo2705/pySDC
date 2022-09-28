@@ -22,6 +22,7 @@ f_im = np.zeros_like(Ns, dtype=float)
 f_ex = np.zeros_like(Ns, dtype=float)
 f_im_count = np.zeros_like(Ns)
 f_ex_count = np.zeros_like(Ns)
+error = np.zeros_like(Ns, dtype=float)
 # initialize problem parameters
 problem_params = dict()
 problem_params['nu'] = 1
@@ -98,6 +99,7 @@ for i, N in enumerate(Ns):
     f_ex[i] = P.f_ex
     f_im_count[i] = P.f_im_count
     f_ex_count[i] = P.f_ex_count
+    error[i] = abs(uend - P.u_exact(Tend))
 # write down stats to .pickle file
 data = {
     'Ns': Ns,
@@ -113,7 +115,8 @@ data = {
     'f-time-imp': f_im,
     'f-time-exp': f_ex,
     'f-count-imp': f_im_count,
-    'f-count-exp': f_ex_count
+    'f-count-exp': f_ex_count,
+    'error': error
 
 }
 with open(name, 'wb') as f:
