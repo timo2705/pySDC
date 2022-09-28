@@ -66,7 +66,7 @@ class heatNd_periodic(ptype):
             raise ProblemError('need a square domain, got %s' % problem_params['nvars'])
 
         # invoke super init, passing number of dofs, dtype_u and dtype_f
-        super(heatNd_periodic, self).__init__(init=(problem_params['nvars'], None, cp.dtype('float32')),
+        super(heatNd_periodic, self).__init__(init=(problem_params['nvars'], None, cp.dtype('float64')),
                                               dtype_u=dtype_u, dtype_f=dtype_f, params=problem_params)
 
         # compute dx (equal in both dimensions) and get discretization matrix A

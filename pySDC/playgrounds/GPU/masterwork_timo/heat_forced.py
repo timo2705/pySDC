@@ -1,7 +1,7 @@
 import warnings
 warnings.filterwarnings("ignore")
-# from pySDC.implementations.problem_classes.HeatEquation_ND_FD_forced_periodic import heatNd_periodic
-from pySDC.implementations.problem_classes.HeatEquation_ND_FD_forced_periodic_gpu import heatNd_periodic
+from pySDC.implementations.problem_classes.HeatEquation_ND_FD_forced_periodic import heatNd_periodic
+# from pySDC.implementations.problem_classes.HeatEquation_ND_FD_forced_periodic_gpu import heatNd_periodic
 from pySDC.implementations.collocation_classes.gauss_radau_right import CollGaussRadau_Right
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
@@ -9,8 +9,8 @@ from pySDC.helpers.stats_helper import filter_stats, sort_stats
 import numpy as np
 import pickle
 
-# name = 'pickle/heat-pySDC-cpu-float32.pickle'
-name = 'pickle/heat-pySDC-gpu-float32.pickle'
+name = 'pickle/heat-pySDC-cpu-float64.pickle'
+# name = 'pickle/heat-pySDC-gpu-float64.pickle'
 Ns = np.asarray([16, 32, 64, 128, 256])
 D = 3
 # Ns = np.asarray([128, 256, 512])
