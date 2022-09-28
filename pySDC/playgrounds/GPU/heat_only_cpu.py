@@ -5,6 +5,7 @@ from pySDC.implementations.controller_classes.controller_nonMPI import controlle
 from pySDC.helpers.stats_helper import filter_stats, sort_stats
 
 # initialize problem parameters
+N = 128
 problem_params = dict()
 problem_params['nu'] = 1
 problem_params['freq'] = (4, 4, 4)
@@ -13,7 +14,7 @@ problem_params['ndim'] = 3
 problem_params['lintol'] = 1E-10
 problem_params['liniter'] = 99
 problem_params['direct_solver'] = False
-problem_params['nvars'] = (32, 32, 32)
+problem_params['nvars'] = (N, N, N)
 
 # initialize level parameters
 level_params = dict()
@@ -62,5 +63,9 @@ uinit = P.u_exact(t0)
 uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
 timing = sort_stats(filter_stats(stats, type='timing_run'), sortby='time')
 print('Laufzeit:', timing[0][1])
-print(P.f_im/P.f_im_count)
-print(P.f_ex/P.f_ex_count)
+niter = filter_stats(stats, type='niter')
+print('Fehler', abs(uend - P.u_exact(Tend)))
+# print(len(niter))
+# print(P.solver_count)
+# print("f ex count:", P.f_im_count)
+# print("f im count:", P.f_ex_count)

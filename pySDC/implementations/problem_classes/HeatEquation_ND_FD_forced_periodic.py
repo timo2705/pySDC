@@ -76,7 +76,7 @@ class heatNd_periodic(ptype):
         self.f_ex = 0
         self.f_im_count = 0
         self.f_ex_count = 0
-
+        self.solver_count = 0
     @staticmethod
     def __get_A(N, nu, dx, ndim, order):
         """
@@ -174,7 +174,7 @@ class heatNd_periodic(ptype):
         """
 
         me = self.dtype_u(self.init)
-
+        self.solver_count += 1
         if self.params.direct_solver:
             me[:] = spsolve(self.Id - factor * self.A, rhs.flatten()).reshape(self.params.nvars)
         else:
