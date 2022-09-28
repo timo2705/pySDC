@@ -5,7 +5,7 @@ from pySDC.implementations.controller_classes.controller_nonMPI import controlle
 from pySDC.helpers.stats_helper import filter_stats, sort_stats
 
 # initialize problem parameters
-N = 128
+N = 64
 problem_params = dict()
 problem_params['nu'] = 1
 problem_params['freq'] = (4, 4, 4)
@@ -18,7 +18,7 @@ problem_params['nvars'] = (N, N, N)
 
 # initialize level parameters
 level_params = dict()
-level_params['restol'] = 1E-07
+level_params['restol'] = 0
 level_params['dt'] = 1E-07
 level_params['nsweeps'] = 1
 
@@ -32,7 +32,7 @@ sweeper_params['initial_guess'] = 'spread'
 
 # initialize step parameters
 step_params = dict()
-step_params['maxiter'] = 50
+step_params['maxiter'] = 5
 
 # setup parameters "in time"
 t0 = 0

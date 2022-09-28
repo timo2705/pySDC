@@ -9,8 +9,8 @@ from pySDC.helpers.stats_helper import filter_stats, sort_stats
 import numpy as np
 import pickle
 
-# name = 'pickle/heat-jusuf-pySDC-cpu-count-2.pickle'
-name = 'pickle/heat-jusuf-pySDC-gpu-dtype.pickle'
+# name = 'pickle/heat-pySDC-cpu-float32.pickle'
+name = 'pickle/heat-pySDC-gpu-float32.pickle'
 Ns = np.asarray([16, 32, 64, 128, 256])
 D = 3
 # Ns = np.asarray([128, 256, 512])
@@ -34,7 +34,7 @@ problem_params['direct_solver'] = False
 
 # initialize level parameters
 level_params = dict()
-level_params['restol'] = 1E-07
+level_params['restol'] = 0
 level_params['dt'] = 1E-07
 level_params['nsweeps'] = 1
 
@@ -48,7 +48,7 @@ sweeper_params['initial_guess'] = 'spread'
 
 # initialize step parameters
 step_params = dict()
-step_params['maxiter'] = 50
+step_params['maxiter'] = 5
 
 # initialize space transfer parameters
 space_transfer_params = dict()
