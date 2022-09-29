@@ -1,7 +1,7 @@
 import warnings
 warnings.filterwarnings("ignore")
-from pySDC.implementations.problem_classes.AllenCahn_2D_FFT import allencahn2d_imex
-# from pySDC.implementations.problem_classes.AllenCahn_2D_FFT_gpu import allencahn2d_imex
+# from pySDC.implementations.problem_classes.AllenCahn_2D_FFT import allencahn2d_imex
+from pySDC.implementations.problem_classes.AllenCahn_2D_FFT_gpu import allencahn2d_imex
 from pySDC.implementations.collocation_classes.gauss_radau_right import CollGaussRadau_Right
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
@@ -9,8 +9,8 @@ from pySDC.helpers.stats_helper import filter_stats, sort_stats
 import numpy as np
 import pickle
 
-name = 'pickle/ac-fft-pySDC-cpu.pickle'
-# name = 'pickle/ac-fft-jusuf-pySDC-gpu.pickle'
+# name = 'pickle/ac-fft-pySDC-cpu.pickle'
+name = 'pickle/ac-fft-jusuf-pySDC-gpu.pickle'
 Ns = np.asarray([128, 256, 512, 1024, 2048])
 # Ns = np.asarray([128, 256, 512])  # for Home-PC
 
