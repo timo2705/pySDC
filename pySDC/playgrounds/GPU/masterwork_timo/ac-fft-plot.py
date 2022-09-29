@@ -2,8 +2,8 @@ import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 
-name_cpu = f'pickle/ac-jusuf-pySDC-cpu_fft.pickle'
-name_gpu = 'pickle/ac-jusuf-pySDC-gpu_fft.pickle'
+name_cpu = f'/Users/timolenz/PycharmProjects/pySDC/pySDC/playgrounds/GPU/masterwork_timo/pickle/ac-fft-pySDC-cpu.pickle'
+name_gpu = '/Users/timolenz/PycharmProjects/pySDC/pySDC/playgrounds/GPU/masterwork_timo/pickle/ac-fft-jusuf-pySDC-gpu.pickle'
 
 with open(name_cpu, 'rb') as f:
    data_cpu = pickle.load(f)
