@@ -140,7 +140,8 @@ class heatNd_periodic(ptype):
 
         f = self.dtype_f(self.init)
         start = time.perf_counter()
-        f.impl[:] = self.A.dot(u.flatten()).reshape(self.params.nvars)
+        v = u.flatten()
+        f.impl[:] = self.A.dot(v).reshape(self.params.nvars)
         ende = time.perf_counter()
         self.f_im += ende - start
         self.f_im_count += 1
