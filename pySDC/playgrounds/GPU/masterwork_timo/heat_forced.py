@@ -9,8 +9,8 @@ from pySDC.helpers.stats_helper import filter_stats, sort_stats
 import numpy as np
 import pickle
 
-# name = 'pickle/heat-jusuf-pySDC-cpu-count-2.pickle'
-name = 'pickle/heat-jusuf-pySDC-gpu-dtype.pickle'
+# name = 'pickle/heat-pySDC-cpu-new-dtype.pickle'
+name = 'pickle/heat-pySDC-gpu-new-dtype.pickle'
 Ns = np.asarray([16, 32, 64, 128, 256])
 D = 3
 # Ns = np.asarray([128, 256, 512])

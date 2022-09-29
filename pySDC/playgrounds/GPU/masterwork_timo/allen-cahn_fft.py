@@ -9,8 +9,8 @@ from pySDC.helpers.stats_helper import filter_stats, sort_stats
 import numpy as np
 import pickle
 
-name = 'pickle/ac-jusuf-pySDC-cpu_fft2.pickle'
-# name = 'pickle/ac-jusuf-pySDC-gpu_fft2.pickle'
+name = 'pickle/ac-fft-pySDC-cpu.pickle'
+# name = 'pickle/ac-fft-jusuf-pySDC-gpu.pickle'
 Ns = np.asarray([128, 256, 512, 1024, 2048])
 # Ns = np.asarray([128, 256, 512])  # for Home-PC
 

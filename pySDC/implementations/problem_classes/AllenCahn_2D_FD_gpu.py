@@ -9,7 +9,10 @@ from cupyx.scipy.sparse.linalg import cg  # , spsolve, gmres, minres
 from pySDC.core.Errors import ParameterError, ProblemError
 from pySDC.core.Problem import ptype
 # from pySDC.implementations.datatype_classes.cupy_mesh import cupy_mesh, imex_cupy_mesh, comp2_cupy_mesh
-from pySDC.implementations.datatype_classes.cupy_mesh import cupy_mesh, imex_cupy_mesh, comp2_cupy_mesh
+from pySDC.implementations.datatype_classes.cupy_mesh import cupy_mesh11 as cupy_mesh
+from pySDC.implementations.datatype_classes.cupy_mesh import imex_cupy_mesh11 as imex_cupy_mesh
+from pySDC.implementations.datatype_classes.cupy_mesh import comp2_cupy_mesh11 as comp2_cupy_mesh
+
 
 # http://www.personal.psu.edu/qud2/Res/Pre/dz09sisc.pdf
 
