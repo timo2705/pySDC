@@ -8,7 +8,7 @@ import cupyx.scipy.sparse as csp
 from cupyx.scipy.sparse.linalg import cg as cg_gpu
 import matplotlib.pyplot as plt
 name = 'masterwork_timo/pickle/float.pickle'
-Ns = np.logspace(1, 14, 14, dtype=int)
+Ns = np.logspace(1, 8, 8, dtype=int)
 # Ns = np.logspace(1, 7, 7, dtype=int)
 times_cpu_32 = np.zeros_like(Ns, dtype=float)
 times_gpu_32 = np.zeros_like(Ns, dtype=float)
@@ -18,6 +18,7 @@ dtype = 'float32'
 dtype_cpu = np.dtype(dtype)
 dtype_gpu = cp.dtype(dtype)
 for i, N in enumerate(Ns):
+    print(N)
     A = 5 * sp.eye(N, format='csr', dtype=dtype_cpu)
     b = np.asarray(np.ones(N), dtype=dtype_cpu)
     start = time.perf_counter()
