@@ -34,7 +34,6 @@ times_CPU = cg_CPU+f_im_CPU+f_ex_CPU
 times_GPU = cg_GPU+f_im_GPU+f_ex_GPU
 # Start Plotting Time Marching
 ##############################################################################
-Ns_plot = Ns**D
 plt.scatter(Ns_plot, times_GPU, label="GPU")
 plt.plot(Ns_plot, times_GPU)
 plt.scatter(Ns_plot, times_CPU, label="CPU")
