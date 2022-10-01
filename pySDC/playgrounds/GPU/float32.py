@@ -6,9 +6,10 @@ from scipy.sparse.linalg import cg as cg_cpu
 import cupy as cp
 import cupyx.scipy.sparse as csp
 from cupyx.scipy.sparse.linalg import cg as cg_gpu
+import matplotlib.pyplot as plt
 name = 'masterwork_timo/pickle/float.pickle'
-# Ns = np.logspace(1, 14, 14, dtype=int)
-Ns = np.logspace(1, 7, 7, dtype=int)
+Ns = np.logspace(1, 14, 14, dtype=int)
+# Ns = np.logspace(1, 7, 7, dtype=int)
 times_cpu_32 = np.zeros_like(Ns, dtype=float)
 times_gpu_32 = np.zeros_like(Ns, dtype=float)
 times_cpu_64 = np.zeros_like(Ns, dtype=float)
@@ -45,7 +46,7 @@ for i, N in enumerate(Ns):
     start = time.perf_counter()
     res = cg_cpu(A, b, maxiter=99)[0]
     ende = time.perf_counter()
-    times_cpu_64[i] = ende - start
+    times_gpu_64[i] = ende - start
 
 # write down stats to .pickle file
 data = {
@@ -55,6 +56,21 @@ data = {
     'times-cpu-64': times_cpu_64,
     'times-gpu-64': times_gpu_64
 }
-print(data)
-# with open(name, 'wb') as f:
-#     pickle.dump(data, f)
+"""
+plt.plot(Ns, times_cpu_32, label="float32 CPU")
+plt.plot(Ns, times_gpu_32, label="float32 GPU")
+plt.plot(Ns, times_cpu_64, label="float64 CPU")
+plt.plot(Ns, times_gpu_64, label="float64 GPU")
+plt.xscale('log')
+plt.yscale('log')
+plt.xlabel('Freiheitsgrade')
+plt.ylabel('Zeit in s')
+plt.legend()
+plt.show()
+print(times_cpu_32)
+print(times_gpu_32)
+print(times_cpu_64)
+print(times_gpu_64)
+"""
+with open(name, 'wb') as f:
+    pickle.dump(data, f)
