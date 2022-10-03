@@ -2,7 +2,7 @@ import time
 import pickle
 import numpy as np
 import matplotlib.pyplot as plt
-name = 'masterwork_timo/pickle/float.pickle'
+name = 'masterwork_timo/pickle/float_A.pickle'
 with open(name, 'rb') as f:
     data = pickle.load(f)
 Ns = data['Ns']
