@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 
 name = 'masterwork_timo/pickle/Dot.pickle'
 # Ns = np.logspace(1, 9, 9, dtype=int)
-Ns = np.logspace(1, 8, 8, dtype=int)
-# Ns = np.logspace(1, 7, 7, dtype=int)
+# Ns = np.logspace(1, 8, 8, dtype=int)
+Ns = np.logspace(1, 7, 7, dtype=int)
 times_cpu_32 = np.zeros_like(Ns, dtype=float)
 times_gpu_32 = np.zeros_like(Ns, dtype=float)
 times_cpu_64 = np.zeros_like(Ns, dtype=float)
