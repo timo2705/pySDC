@@ -9,8 +9,8 @@ from cupyx.scipy.sparse.linalg import cg as cg_gpu
 import matplotlib.pyplot as plt
 
 name = 'masterwork_timo/pickle/float.pickle'
-Ns = np.logspace(1, 8, 8, dtype=int)
-# Ns = np.logspace(1, 7, 7, dtype=int)
+# Ns = np.logspace(1, 8, 8, dtype=int)
+Ns = np.logspace(1, 7, 7, dtype=int)
 times_cpu_32 = np.zeros_like(Ns, dtype=float)
 times_gpu_32 = np.zeros_like(Ns, dtype=float)
 times_cpu_64 = np.zeros_like(Ns, dtype=float)
@@ -79,16 +79,16 @@ def __get_A_GPU(N, nu=1., order=2):
 
 
 for i, N in enumerate(Ns):
-    print(N)
-    # A = 5 * sp.eye(N, format='csr', dtype=dtype_cpu)
-    A = __get_A_CPU(N)
+    # print(N)
+    A = 5 * sp.eye(N, format='csr', dtype=dtype_cpu)
+    # A = __get_A_CPU(N)
     b = np.asarray(np.ones(N), dtype=dtype_cpu)
     start = time.perf_counter()
     res = cg_cpu(A, b, maxiter=99)[0]
     ende = time.perf_counter()
     times_cpu_32[i] = ende - start
-    # A = 5 * csp.eye(N, format='csr', dtype=dtype_gpu)
-    A = __get_A_GPU(N)
+    A = 5 * csp.eye(N, format='csr', dtype=dtype_gpu)
+    # A = __get_A_GPU(N)
     b = cp.asarray(cp.ones(N), dtype=dtype_gpu)
     start = time.perf_counter()
     res = cg_gpu(A, b, maxiter=99)[0]
@@ -99,18 +99,19 @@ dtype = 'float64'
 dtype_cpu = np.dtype(dtype)
 dtype_gpu = cp.dtype(dtype)
 for i, N in enumerate(Ns):
-    # A = 5 * sp.eye(N, format='csr', dtype=dtype_cpu)
-    A = __get_A_CPU(N)
+    print(N)
+    A = 5 * sp.eye(N, format='csr', dtype=dtype_cpu)
+    # A = __get_A_CPU(N)
     b = np.asarray(np.ones(N), dtype=dtype_cpu)
     start = time.perf_counter()
     res = cg_cpu(A, b, maxiter=99)[0]
     ende = time.perf_counter()
     times_cpu_64[i] = ende - start
-    # A = 5 * sp.eye(N, format='csr', dtype=dtype_cpu)
-    A = __get_A_GPU(N)
-    b = np.asarray(np.ones(N), dtype=dtype_cpu)
+    A = 5 * csp.eye(N, format='csr', dtype=dtype_gpu)
+    # A = __get_A_GPU(N)
+    b = cp.asarray(cp.ones(N), dtype=dtype_gpu)
     start = time.perf_counter()
-    res = cg_cpu(A, b, maxiter=99)[0]
+    res = cg_gpu(A, b, maxiter=99)[0]
     ende = time.perf_counter()
     times_gpu_64[i] = ende - start
 
