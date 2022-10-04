@@ -8,12 +8,12 @@ import cupyx.scipy.sparse as csp
 from cupyx.scipy.sparse.linalg import cg as cg_gpu
 import matplotlib.pyplot as plt
 
-name = 'masterwork_timo/pickle/Dot.pickle'
+name = 'masterwork_timo/pickle/event.pickle'
 # Ns = np.logspace(1, 9, 9, dtype=int)
 # Ns = np.logspace(1, 8, 8, dtype=int)
 Ns = np.logspace(1, 7, 7, dtype=int)
-times_cpu_16 = np.zeros_like(Ns, dtype=float)
-times_gpu_16 = np.zeros_like(Ns, dtype=float)
+# times_cpu_16 = np.zeros_like(Ns, dtype=float)
+# times_gpu_16 = np.zeros_like(Ns, dtype=float)
 times_cpu_32 = np.zeros_like(Ns, dtype=float)
 times_gpu_32 = np.zeros_like(Ns, dtype=float)
 times_cpu_64 = np.zeros_like(Ns, dtype=float)
@@ -77,6 +77,7 @@ def __get_A_GPU(N, nu=1., order=2):
 
     return A
 
+"""
 dtype = 'float16'
 dtype_cpu = np.dtype(dtype)
 dtype_gpu = cp.dtype(dtype)
@@ -85,8 +86,6 @@ for i, N in enumerate(Ns):
     # A = 5 * sp.eye(N, format='csr', dtype=dtype_cpu)
     # A = __get_A_CPU(N)
     A = np.linspace(0, N, num=N*N, dtype=dtype_cpu).reshape((N, N))
-    print(A)
-    exit()
     # b = np.asarray(np.ones(N), dtype=dtype_cpu)
     start = time.perf_counter()
     # res = cg_cpu(A, b, maxiter=99)[0]
@@ -102,60 +101,68 @@ for i, N in enumerate(Ns):
     res = A.dot(A)
     ende = time.perf_counter()
     times_gpu_32[i] = ende - start
-
+"""
 dtype = 'float32'
 dtype_cpu = np.dtype(dtype)
 dtype_gpu = cp.dtype(dtype)
 for i, N in enumerate(Ns):
     # print(N)
-    # A = 5 * sp.eye(N, format='csr', dtype=dtype_cpu)
+    A = 5 * sp.eye(N, format='csr', dtype=dtype_cpu)
     # A = __get_A_CPU(N)
-    A = np.linspace(0, N, num=N*N, dtype=dtype_cpu).reshape((N, N))
+    # A = np.linspace(0, N, num=N*N, dtype=dtype_cpu).reshape((N, N))
     # b = np.asarray(np.ones(N), dtype=dtype_cpu)
     start = time.perf_counter()
     # res = cg_cpu(A, b, maxiter=99)[0]
     res = A.dot(A)
     ende = time.perf_counter()
     times_cpu_32[i] = ende - start
-    # A = 5 * csp.eye(N, format='csr', dtype=dtype_gpu)
+    A = 5 * csp.eye(N, format='csr', dtype=dtype_gpu)
     # A = __get_A_GPU(N)
-    A = cp.linspace(0, N, num=N*N, dtype=dtype_gpu).reshape((N, N))
+    # A = cp.linspace(0, N, num=N*N, dtype=dtype_gpu).reshape((N, N))
     # b = cp.asarray(cp.ones(N), dtype=dtype_gpu)
-    start = time.perf_counter()
+    # start = time.perf_counter()
+    start_gpu = cp.cuda.Event()
+    end_gpu = cp.cuda.Event()
     # res = cg_gpu(A, b, maxiter=99)[0]
+    start_gpu.record()
     res = A.dot(A)
-    ende = time.perf_counter()
-    times_gpu_32[i] = ende - start
+    end_gpu.record()
+    end_gpu.synchronize()
+    # ende = time.perf_counter()
+    times_gpu_32[i] = cp.cuda.get_elapsed_time(start_gpu, end_gpu)
 
 dtype = 'float64'
 dtype_cpu = np.dtype(dtype)
 dtype_gpu = cp.dtype(dtype)
 for i, N in enumerate(Ns):
     # print(N)
-    # A = 5 * sp.eye(N, format='csr', dtype=dtype_cpu)
+    A = 5 * sp.eye(N, format='csr', dtype=dtype_cpu)
     # A = __get_A_CPU(N)
-    A = np.linspace(0, N, num=N*N, dtype=dtype_cpu).reshape((N, N))
+    # A = np.linspace(0, N, num=N*N, dtype=dtype_cpu).reshape((N, N))
     # b = np.asarray(np.ones(N), dtype=dtype_cpu)
     start = time.perf_counter()
     # res = cg_cpu(A, b, maxiter=99)[0]
     res = A.dot(A)
     ende = time.perf_counter()
     times_cpu_64[i] = ende - start
-    # A = 5 * csp.eye(N, format='csr', dtype=dtype_gpu)
+    A = 5 * csp.eye(N, format='csr', dtype=dtype_gpu)
     # A = __get_A_GPU(N)
-    A = cp.linspace(0, N, num=N*N, dtype=dtype_gpu).reshape((N, N))
+    # A = cp.linspace(0, N, num=N*N, dtype=dtype_gpu).reshape((N, N))
     # b = cp.asarray(cp.ones(N), dtype=dtype_gpu)
-    start = time.perf_counter()
+    # start = time.perf_counter()
+    start_gpu = cp.cuda.Event()
+    end_gpu = cp.cuda.Event()
     # res = cg_gpu(A, b, maxiter=99)[0]
+    start_gpu.record()
     res = A.dot(A)
-    ende = time.perf_counter()
-    times_gpu_64[i] = ende - start
+    end_gpu.record()
+    end_gpu.synchronize()
+    # ende = time.perf_counter()
+    times_gpu_64[i] = cp.cuda.get_elapsed_time(start_gpu, end_gpu)
 
 # write down stats to .pickle file
 data = {
     'Ns': Ns,
-    'times-cpu-16': times_cpu_16,
-    'times-gpu-16': times_gpu_16,
     'times-cpu-32': times_cpu_32,
     'times-gpu-32': times_gpu_32,
     'times-cpu-64': times_cpu_64,

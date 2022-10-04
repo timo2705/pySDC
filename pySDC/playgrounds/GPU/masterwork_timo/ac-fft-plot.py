@@ -22,7 +22,6 @@ f_im_CPU = data_cpu['f-time-imp']
 f_ex_CPU = data_cpu['f-time-exp']
 with open(name_gpu, 'rb') as f:
    data_gpu = pickle.load(f)
-print(data_gpu['f-time-imp'])
 # times_GPU = data_gpu['times']
 setup_GPU = data_gpu['setup']
 cg_GPU = data_gpu['cg-time']
@@ -67,6 +66,7 @@ plt.clf()
 ##############################################################################
 plt.scatter(Ns_plot, times_CPU/times_GPU, label="Factor marching")
 print(times_CPU/times_GPU)
+print(times_GPU)
 plt.scatter(Ns_plot, setup_CPU/setup_GPU, label="Factor setup")
 plt.scatter(Ns_plot, cg_CPU/cg_GPU-0.08*(cg_CPU/cg_GPU), label="Factor cg")
 print(cg_CPU/cg_GPU)
