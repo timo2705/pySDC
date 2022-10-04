@@ -18,9 +18,6 @@ times_cpu_32 = np.zeros_like(Ns, dtype=float)
 times_gpu_32 = np.zeros_like(Ns, dtype=float)
 times_cpu_64 = np.zeros_like(Ns, dtype=float)
 times_gpu_64 = np.zeros_like(Ns, dtype=float)
-dtype = 'float32'
-dtype_cpu = np.dtype(dtype)
-dtype_gpu = cp.dtype(dtype)
 
 
 def get_sets(N, order=2):
@@ -86,7 +83,10 @@ dtype_gpu = cp.dtype(dtype)
 for i, N in enumerate(Ns):
     # print(N)
     # A = 5 * sp.eye(N, format='csr', dtype=dtype_cpu)
-    A = __get_A_CPU(N)
+    # A = __get_A_CPU(N)
+    A = np.linspace(0, N, num=N*N, dtype=dtype_cpu).reshape((N, N))
+    print(A)
+    exit()
     # b = np.asarray(np.ones(N), dtype=dtype_cpu)
     start = time.perf_counter()
     # res = cg_cpu(A, b, maxiter=99)[0]
@@ -94,7 +94,8 @@ for i, N in enumerate(Ns):
     ende = time.perf_counter()
     times_cpu_32[i] = ende - start
     # A = 5 * csp.eye(N, format='csr', dtype=dtype_gpu)
-    A = __get_A_GPU(N)
+    # A = __get_A_GPU(N)
+    A = cp.linspace(0, N, num=N * N, dtype=dtype_gpu).reshape((N, N))
     # b = cp.asarray(cp.ones(N), dtype=dtype_gpu)
     start = time.perf_counter()
     # res = cg_gpu(A, b, maxiter=99)[0]
@@ -108,7 +109,8 @@ dtype_gpu = cp.dtype(dtype)
 for i, N in enumerate(Ns):
     # print(N)
     # A = 5 * sp.eye(N, format='csr', dtype=dtype_cpu)
-    A = __get_A_CPU(N)
+    # A = __get_A_CPU(N)
+    A = np.linspace(0, N, num=N*N, dtype=dtype_cpu).reshape((N, N))
     # b = np.asarray(np.ones(N), dtype=dtype_cpu)
     start = time.perf_counter()
     # res = cg_cpu(A, b, maxiter=99)[0]
@@ -116,7 +118,8 @@ for i, N in enumerate(Ns):
     ende = time.perf_counter()
     times_cpu_32[i] = ende - start
     # A = 5 * csp.eye(N, format='csr', dtype=dtype_gpu)
-    A = __get_A_GPU(N)
+    # A = __get_A_GPU(N)
+    A = cp.linspace(0, N, num=N*N, dtype=dtype_gpu).reshape((N, N))
     # b = cp.asarray(cp.ones(N), dtype=dtype_gpu)
     start = time.perf_counter()
     # res = cg_gpu(A, b, maxiter=99)[0]
@@ -128,9 +131,10 @@ dtype = 'float64'
 dtype_cpu = np.dtype(dtype)
 dtype_gpu = cp.dtype(dtype)
 for i, N in enumerate(Ns):
-    print(N)
+    # print(N)
     # A = 5 * sp.eye(N, format='csr', dtype=dtype_cpu)
-    A = __get_A_CPU(N)
+    # A = __get_A_CPU(N)
+    A = np.linspace(0, N, num=N*N, dtype=dtype_cpu).reshape((N, N))
     # b = np.asarray(np.ones(N), dtype=dtype_cpu)
     start = time.perf_counter()
     # res = cg_cpu(A, b, maxiter=99)[0]
@@ -138,7 +142,8 @@ for i, N in enumerate(Ns):
     ende = time.perf_counter()
     times_cpu_64[i] = ende - start
     # A = 5 * csp.eye(N, format='csr', dtype=dtype_gpu)
-    A = __get_A_GPU(N)
+    # A = __get_A_GPU(N)
+    A = cp.linspace(0, N, num=N*N, dtype=dtype_gpu).reshape((N, N))
     # b = cp.asarray(cp.ones(N), dtype=dtype_gpu)
     start = time.perf_counter()
     # res = cg_gpu(A, b, maxiter=99)[0]
@@ -174,3 +179,4 @@ print(times_gpu_64)
 """
 with open(name, 'wb') as f:
     pickle.dump(data, f)
+print("done")
