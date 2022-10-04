@@ -12,6 +12,8 @@ name = 'masterwork_timo/pickle/Dot.pickle'
 # Ns = np.logspace(1, 9, 9, dtype=int)
 # Ns = np.logspace(1, 8, 8, dtype=int)
 Ns = np.logspace(1, 7, 7, dtype=int)
+times_cpu_16 = np.zeros_like(Ns, dtype=float)
+times_gpu_16 = np.zeros_like(Ns, dtype=float)
 times_cpu_32 = np.zeros_like(Ns, dtype=float)
 times_gpu_32 = np.zeros_like(Ns, dtype=float)
 times_cpu_64 = np.zeros_like(Ns, dtype=float)
@@ -78,7 +80,31 @@ def __get_A_GPU(N, nu=1., order=2):
 
     return A
 
+dtype = 'float16'
+dtype_cpu = np.dtype(dtype)
+dtype_gpu = cp.dtype(dtype)
+for i, N in enumerate(Ns):
+    # print(N)
+    # A = 5 * sp.eye(N, format='csr', dtype=dtype_cpu)
+    A = __get_A_CPU(N)
+    # b = np.asarray(np.ones(N), dtype=dtype_cpu)
+    start = time.perf_counter()
+    # res = cg_cpu(A, b, maxiter=99)[0]
+    res = A.dot(A)
+    ende = time.perf_counter()
+    times_cpu_32[i] = ende - start
+    # A = 5 * csp.eye(N, format='csr', dtype=dtype_gpu)
+    A = __get_A_GPU(N)
+    # b = cp.asarray(cp.ones(N), dtype=dtype_gpu)
+    start = time.perf_counter()
+    # res = cg_gpu(A, b, maxiter=99)[0]
+    res = A.dot(A)
+    ende = time.perf_counter()
+    times_gpu_32[i] = ende - start
 
+dtype = 'float32'
+dtype_cpu = np.dtype(dtype)
+dtype_gpu = cp.dtype(dtype)
 for i, N in enumerate(Ns):
     # print(N)
     # A = 5 * sp.eye(N, format='csr', dtype=dtype_cpu)
@@ -123,6 +149,8 @@ for i, N in enumerate(Ns):
 # write down stats to .pickle file
 data = {
     'Ns': Ns,
+    'times-cpu-16': times_cpu_16,
+    'times-gpu-16': times_gpu_16,
     'times-cpu-32': times_cpu_32,
     'times-gpu-32': times_gpu_32,
     'times-cpu-64': times_cpu_64,
