@@ -54,7 +54,7 @@ step_params['maxiter'] = 50
 
 # setup parameters "in time"
 t0 = 0
-schritte = 8
+schritte = 4
 Tend = schritte*1E-03
 
 # initialize controller parameters
@@ -112,3 +112,5 @@ data = {
 }
 with open(name, 'wb') as f:
     pickle.dump(data, f)
+
+print('done')
