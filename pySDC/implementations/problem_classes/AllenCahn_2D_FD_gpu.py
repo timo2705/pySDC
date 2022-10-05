@@ -1,10 +1,7 @@
-import time
-
 import numpy as np
 import cupy as cp
 import cupyx.scipy.sparse as csp
 from cupyx.scipy.sparse.linalg import cg  # , spsolve, gmres, minres
-
 
 from pySDC.core.Errors import ParameterError, ProblemError
 from pySDC.core.Problem import ptype
@@ -63,6 +60,8 @@ class allencahn_fullyimplicit(ptype):
         self.A = self.__get_A(self.params.nvars, self.dx)
         self.xvalues = cp.array([i * self.dx - 0.5 for i in range(self.params.nvars[0])])
 
+        self.start_gpu = cp.cuda.Event()
+        self.end_gpu = cp.cuda.Event()
         self.newton_itercount = 0
         self.lin_itercount = 0
         self.newton_ncalls = 0
@@ -218,15 +217,17 @@ class allencahn_semiimplicit(allencahn_fullyimplicit):
             dtype_f: the RHS
         """
         f = self.dtype_f(self.init)
-        start = time.perf_counter()
+        self.start_gpu.record()
         v = u.flatten()
         f.impl[:] = self.A.dot(v).reshape(self.params.nvars)
-        ende = time.perf_counter()
-        self.f_im += ende - start
-        start = time.perf_counter()
+        self.end_gpu.record()
+        self.end_gpu.synchronize()
+        self.f_im += cp.cuda.get_elapsed_time(self.start_gpu, self.end_gpu)/1000
+        self.start_gpu.record()
         f.expl[:] = (1.0 / self.params.eps ** 2 * v * (1.0 - v ** self.params.nu)).reshape(self.params.nvars)
-        ende = time.perf_counter()
-        self.f_ex += ende - start
+        self.end_gpu.record()
+        self.end_gpu.synchronize()
+        self.f_ex += cp.cuda.get_elapsed_time(self.start_gpu, self.end_gpu)/1000
         return f
 
     def solve_system(self, rhs, factor, u0, t):

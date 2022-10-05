@@ -2,7 +2,6 @@ import numpy as np
 import cupy as cp
 import cupyx.scipy.sparse as csp
 from cupyx.scipy.sparse.linalg import spsolve, cg  # , gmres, minres
-import time
 
 from pySDC.core.Errors import ParameterError, ProblemError
 from pySDC.core.Problem import ptype

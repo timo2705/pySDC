@@ -1,6 +1,6 @@
 import cupy as cp
 import numpy as np
-import time
+
 from pySDC.core.Errors import ParameterError, ProblemError
 from pySDC.core.Problem import ptype
 # from pySDC.implementations.datatype_classes.cupy_mesh import cupy_mesh, imex_cupy_mesh
@@ -68,6 +68,9 @@ class allencahn2d_imex(ptype):
 
         xv, yv = cp.meshgrid(kx, ky, indexing='ij')
         self.lap = -xv ** 2 - yv ** 2
+
+        self.start_gpu = cp.cuda.Event()
+        self.end_gpu = cp.cuda.Event()
         self.f_im = 0
         self.f_ex = 0
 
@@ -84,17 +87,19 @@ class allencahn2d_imex(ptype):
         """
 
         f = self.dtype_f(self.init)
-        start = time.perf_counter()
+        self.start_gpu.record()
         v = u.flatten()
         tmp = self.lap * cp.fft.rfft2(u)
         f.impl[:] = cp.fft.irfft2(tmp)
-        ende = time.perf_counter()
-        self.f_im += ende - start
-        start = time.perf_counter()
+        self.end_gpu.record()
+        self.end_gpu.synchronize()
+        self.f_im += cp.cuda.get_elapsed_time(self.start_gpu, self.end_gpu)/1000
+        self.start_gpu.record()
         if self.params.eps > 0:
             f.expl[:] = (1.0 / self.params.eps ** 2 * v * (1.0 - v ** self.params.nu)).reshape(self.params.nvars)
-        ende = time.perf_counter()
-        self.f_ex += ende - start
+        self.end_gpu.record()
+        self.end_gpu.synchronize()
+        self.f_ex += cp.cuda.get_elapsed_time(self.start_gpu, self.end_gpu)/1000
         return f
 
     def solve_system(self, rhs, factor, u0, t):
