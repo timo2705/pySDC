@@ -3,8 +3,10 @@ from pySDC.implementations.collocation_classes.gauss_radau_right import CollGaus
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
 from pySDC.helpers.stats_helper import filter_stats, sort_stats
+from pySDC.helpers.gpu_hook import hook_gpu
 
 # initialize problem parameters
+N = 64
 problem_params = dict()
 problem_params['nu'] = 1
 problem_params['freq'] = (4, 4, 4)
@@ -13,7 +15,7 @@ problem_params['ndim'] = 3
 problem_params['lintol'] = 1E-10
 problem_params['liniter'] = 99
 problem_params['direct_solver'] = False
-problem_params['nvars'] = (256, 256, 256)
+problem_params['nvars'] = (N, N, N)
 
 # initialize level parameters
 level_params = dict()
@@ -47,6 +49,7 @@ Tend = schritte*level_params['dt']
 # initialize controller parameters
 controller_params = dict()
 controller_params['logger_level'] = 30
+controller_params['hook_class'] = hook_gpu
 
 # fill description dictionary for easy step instantiation
 description = dict()
@@ -68,4 +71,6 @@ uinit = P.u_exact(t0)
 uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
 timing = sort_stats(filter_stats(stats, type='timing_run'), sortby='time')
 print('Laufzeit:', timing[0][1])
+print("f ex :", P.f_im)
+print("f im :", P.f_ex)
 

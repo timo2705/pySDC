@@ -102,20 +102,23 @@ for i, N in enumerate(Ns):
     ende = time.perf_counter()
     times_gpu_32[i] = ende - start
 """
+
 dtype = 'float32'
 dtype_cpu = np.dtype(dtype)
 dtype_gpu = cp.dtype(dtype)
+A = 5 * csp.eye(10, format='csr', dtype=dtype_gpu)
+A.dot(A)
 for i, N in enumerate(Ns):
     # print(N)
-    A = 5 * sp.eye(N, format='csr', dtype=dtype_cpu)
+    # A = 5 * sp.eye(N, format='csr', dtype=dtype_cpu)
     # A = __get_A_CPU(N)
     # A = np.linspace(0, N, num=N*N, dtype=dtype_cpu).reshape((N, N))
     # b = np.asarray(np.ones(N), dtype=dtype_cpu)
-    start = time.perf_counter()
+    # start = time.perf_counter()
     # res = cg_cpu(A, b, maxiter=99)[0]
-    res = A.dot(A)
-    ende = time.perf_counter()
-    times_cpu_32[i] = ende - start
+    # res = A.dot(A)
+    # ende = time.perf_counter()
+    # times_cpu_32[i] = ende - start
     A = 5 * csp.eye(N, format='csr', dtype=dtype_gpu)
     # A = __get_A_GPU(N)
     # A = cp.linspace(0, N, num=N*N, dtype=dtype_gpu).reshape((N, N))
@@ -136,15 +139,15 @@ dtype_cpu = np.dtype(dtype)
 dtype_gpu = cp.dtype(dtype)
 for i, N in enumerate(Ns):
     # print(N)
-    A = 5 * sp.eye(N, format='csr', dtype=dtype_cpu)
+    # A = 5 * sp.eye(N, format='csr', dtype=dtype_cpu)
     # A = __get_A_CPU(N)
     # A = np.linspace(0, N, num=N*N, dtype=dtype_cpu).reshape((N, N))
     # b = np.asarray(np.ones(N), dtype=dtype_cpu)
-    start = time.perf_counter()
+    # start = time.perf_counter()
     # res = cg_cpu(A, b, maxiter=99)[0]
-    res = A.dot(A)
-    ende = time.perf_counter()
-    times_cpu_64[i] = ende - start
+    # res = A.dot(A)
+    # ende = time.perf_counter()
+    # times_cpu_64[i] = ende - start
     A = 5 * csp.eye(N, format='csr', dtype=dtype_gpu)
     # A = __get_A_GPU(N)
     # A = cp.linspace(0, N, num=N*N, dtype=dtype_gpu).reshape((N, N))
@@ -168,10 +171,10 @@ data = {
     'times-cpu-64': times_cpu_64,
     'times-gpu-64': times_gpu_64
 }
-"""
-plt.plot(Ns, times_cpu_32, label="float32 CPU")
+
+# plt.plot(Ns, times_cpu_32, label="float32 CPU")
 plt.plot(Ns, times_gpu_32, label="float32 GPU")
-plt.plot(Ns, times_cpu_64, label="float64 CPU")
+# plt.plot(Ns, times_cpu_64, label="float64 CPU")
 plt.plot(Ns, times_gpu_64, label="float64 GPU")
 plt.xscale('log')
 plt.yscale('log')
@@ -179,11 +182,12 @@ plt.xlabel('Freiheitsgrade')
 plt.ylabel('Zeit in s')
 plt.legend()
 plt.show()
-print(times_cpu_32)
+# print(times_cpu_32)
 print(times_gpu_32)
-print(times_cpu_64)
+# print(times_cpu_64)
 print(times_gpu_64)
 """
 with open(name, 'wb') as f:
     pickle.dump(data, f)
+"""
 print("done")

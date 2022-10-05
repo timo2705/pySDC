@@ -75,6 +75,9 @@ class heatNd_periodic(ptype):
         xvalues = cp.array([i * self.dx for i in range(self.params.nvars[0])])
         self.xv = cp.meshgrid(*[xvalues for _ in range(self.params.ndim)])
         self.Id = csp.eye(self.params.nvars[0] ** self.params.ndim, format='csr')
+
+        self.start_gpu = cp.cuda.Event()
+        self.end_gpu = cp.cuda.Event()
         self.f_im = 0
         self.f_ex = 0
         self.f_im_count = 0
@@ -139,13 +142,14 @@ class heatNd_periodic(ptype):
         """
 
         f = self.dtype_f(self.init)
-        start = time.perf_counter()
+        self.start_gpu.record()
         v = u.flatten()
         f.impl[:] = self.A.dot(v).reshape(self.params.nvars)
-        ende = time.perf_counter()
-        self.f_im += ende - start
+        self.end_gpu.record()
+        self.end_gpu.synchronize()
+        self.f_im += cp.cuda.get_elapsed_time(self.start_gpu, self.end_gpu)/1000
         self.f_im_count += 1
-        start = time.perf_counter()
+        self.start_gpu.record()
         if self.params.ndim == 1:
             f.expl[:] = cp.sin(np.pi * self.params.freq[0] * self.xv[0]) * (self.params.nu * np.pi ** 2 *
                                                                             sum([freq ** 2 for freq in
@@ -167,8 +171,9 @@ class heatNd_periodic(ptype):
                 np.pi * self.params.freq[2] * self.xv[2]) * (self.params.nu * np.pi ** 2 * sum([freq ** 2 for freq in
                                                                                                 self.params.freq]) *
                                                              cp.cos(t) - cp.sin(t))
-        ende = time.perf_counter()
-        self.f_ex += ende - start
+        self.end_gpu.record()
+        self.end_gpu.synchronize()
+        self.f_ex += cp.cuda.get_elapsed_time(self.start_gpu, self.end_gpu)/1000
         self.f_ex_count += 1
         return f
 

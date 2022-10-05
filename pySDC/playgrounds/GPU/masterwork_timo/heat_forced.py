@@ -6,12 +6,14 @@ from pySDC.implementations.collocation_classes.gauss_radau_right import CollGaus
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
 from pySDC.helpers.stats_helper import filter_stats, sort_stats
+from pySDC.helpers.gpu_hook import hook_gpu
 import numpy as np
 import pickle
+import matplotlib.pyplot as plt
 
-# name = 'pickle/heat-pySDC-cpu-new-dtype.pickle'
-name = 'pickle/heat-pySDC-gpu-f.pickle'
-Ns = np.asarray([16, 32, 64, 128, 256])
+# name = 'pickle/heat-pySDC-cpu.pickle'
+name = 'pickle/heat-pySDC-gpu.pickle'
+Ns = np.asarray([16, 16, 32, 64, 128, 256])
 D = 3
 # Ns = np.asarray([128, 256, 512])
 times = np.zeros_like(Ns, dtype=float)
@@ -64,6 +66,8 @@ Tend = schritte*level_params['dt']
 # initialize controller parameters
 controller_params = dict()
 controller_params['logger_level'] = 30
+controller_params['hook_class'] = hook_gpu
+
 for i, N in enumerate(Ns):
     problem_params['nvars'] = (N, N, N)
     # fill description dictionary for easy step instantiation
@@ -100,23 +104,32 @@ for i, N in enumerate(Ns):
     f_ex_count[i] = P.f_ex_count
 # write down stats to .pickle file
 data = {
-    'Ns': Ns,
+    'Ns': Ns[1:],
     'D': D,
     'dt': level_params['dt'],
     'schritte': schritte,
     'iteration': step_params['maxiter'],
     'Tolerance': problem_params['lintol'],
-    'times': times,
-    'setup': setup,
-    'cg-time': cg,
+    'times': times[1:],
+    'setup': setup[1:],
+    'cg-time': cg[1:],
     # 'cg-count': cg_Count,
-    'f-time-imp': f_im,
-    'f-time-exp': f_ex,
-    'f-count-imp': f_im_count,
-    'f-count-exp': f_ex_count
+    'f-time-imp': f_im[1:],
+    'f-time-exp': f_ex[1:],
+    'f-count-imp': f_im_count[1:],
+    'f-count-exp': f_ex_count[1:]
 
 }
+
 with open(name, 'wb') as f:
     pickle.dump(data, f)
-
-
+"""
+plt.plot(Ns[1:]**D, setup[1:])
+plt.xscale('log')
+plt.yscale('log')
+plt.xlabel('Freiheitsgrade')
+plt.ylabel('Zeit in s')
+plt.show()
+print(data)
+"""
+print('done')
