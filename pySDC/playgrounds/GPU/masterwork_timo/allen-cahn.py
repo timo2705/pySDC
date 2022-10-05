@@ -1,7 +1,7 @@
 import warnings
 warnings.filterwarnings("ignore")
-# from pySDC.implementations.problem_classes.AllenCahn_2D_FD import allencahn_semiimplicit
-from pySDC.implementations.problem_classes.AllenCahn_2D_FD_gpu import allencahn_semiimplicit
+from pySDC.implementations.problem_classes.AllenCahn_2D_FD import allencahn_semiimplicit
+# from pySDC.implementations.problem_classes.AllenCahn_2D_FD_gpu import allencahn_semiimplicit
 from pySDC.implementations.collocation_classes.gauss_radau_right import CollGaussRadau_Right
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
@@ -10,8 +10,8 @@ from pySDC.helpers.gpu_hook import hook_gpu
 import numpy as np
 import pickle
 
-# name = 'pickle/ac-pySDC-cpu.pickle'
-name = 'pickle/ac-pySDC-gpu.pickle'
+name = 'pickle/ac-pySDC-cpu.pickle'
+# name = 'pickle/ac-pySDC-gpu.pickle'
 Ns = np.asarray([64, 64, 128, 256, 512, 1024, 2048, 4096])
 # Ns = np.asarray([128, 256, 512])
 times = np.zeros_like(Ns, dtype=float)
@@ -57,7 +57,7 @@ Tend = schritte*1E-03
 # initialize controller parameters
 controller_params = dict()
 controller_params['logger_level'] = 30
-controller_params['hook_class'] = hook_gpu
+# controller_params['hook_class'] = hook_gpu
 
 for i, N in enumerate(Ns):
     problem_params['nvars'] = [(N, N)]
