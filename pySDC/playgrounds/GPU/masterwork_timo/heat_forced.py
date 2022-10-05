@@ -1,7 +1,7 @@
 import warnings
 warnings.filterwarnings("ignore")
-# from pySDC.implementations.problem_classes.HeatEquation_ND_FD_forced_periodic import heatNd_periodic
-from pySDC.implementations.problem_classes.HeatEquation_ND_FD_forced_periodic_gpu import heatNd_periodic
+from pySDC.implementations.problem_classes.HeatEquation_ND_FD_forced_periodic import heatNd_periodic
+# from pySDC.implementations.problem_classes.HeatEquation_ND_FD_forced_periodic_gpu import heatNd_periodic
 from pySDC.implementations.collocation_classes.gauss_radau_right import CollGaussRadau_Right
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
@@ -11,8 +11,8 @@ import numpy as np
 import pickle
 import matplotlib.pyplot as plt
 
-# name = 'pickle/heat-pySDC-cpu.pickle'
-name = 'pickle/heat-pySDC-gpu.pickle'
+name = 'pickle/heat-pySDC-cpu.pickle'
+# name = 'pickle/heat-pySDC-gpu.pickle'
 Ns = np.asarray([16, 16, 32, 64, 128, 256])
 D = 3
 # Ns = np.asarray([128, 256, 512])
@@ -66,7 +66,7 @@ Tend = schritte*level_params['dt']
 # initialize controller parameters
 controller_params = dict()
 controller_params['logger_level'] = 30
-controller_params['hook_class'] = hook_gpu
+# controller_params['hook_class'] = hook_gpu
 
 for i, N in enumerate(Ns):
     problem_params['nvars'] = (N, N, N)
