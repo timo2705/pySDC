@@ -6,12 +6,13 @@ from pySDC.implementations.collocation_classes.gauss_radau_right import CollGaus
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
 from pySDC.helpers.stats_helper import filter_stats, sort_stats
+from pySDC.helpers.gpu_hook import hook_gpu
 import numpy as np
 import pickle
 
 # name = 'pickle/ac-pySDC-cpu.pickle'
 name = 'pickle/ac-pySDC-gpu.pickle'
-Ns = np.asarray([128, 256, 512, 1024, 2048])
+Ns = np.asarray([64, 64, 128, 256, 512, 1024, 2048, 4096])
 # Ns = np.asarray([128, 256, 512])
 times = np.zeros_like(Ns, dtype=float)
 setup = np.zeros_like(Ns, dtype=float)
@@ -56,6 +57,8 @@ Tend = schritte*1E-03
 # initialize controller parameters
 controller_params = dict()
 controller_params['logger_level'] = 30
+controller_params['hook_class'] = hook_gpu
+
 for i, N in enumerate(Ns):
     problem_params['nvars'] = [(N, N)]
     # fill description dictionary for easy step instantiation
@@ -90,18 +93,18 @@ for i, N in enumerate(Ns):
     f_ex[i] = P.f_ex
 # write down stats to .pickle file
 data = {
-    'Ns': Ns,
+    'Ns': Ns[1:],
     'D': 2,
     'dt': level_params['dt'],
     'schritte': schritte,
     'iteration': step_params['maxiter'],
     'Tolerance': problem_params['lin_tol'],
-    'times': times,
-    'setup': setup,
-    'cg-time': cg,
-    'cg-count': cg_Count,
-    'f-time-imp': f_im,
-    'f-time-exp': f_ex
+    'times': times[1:],
+    'setup': setup[1:],
+    'cg-time': cg[1:],
+    'cg-count': cg_Count[1:],
+    'f-time-imp': f_im[1:],
+    'f-time-exp': f_ex[1:]
 
 }
 with open(name, 'wb') as f:
