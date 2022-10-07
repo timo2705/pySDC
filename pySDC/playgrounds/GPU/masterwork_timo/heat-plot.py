@@ -1,8 +1,8 @@
 import pickle
 import matplotlib.pyplot as plt
 
-name_cpu = '/Users/timolenz/PycharmProjects/pySDC/pySDC/playgrounds/GPU/masterwork_timo/pickle/heat-pySDC-cpu-new-dtype.pickle'
-name_gpu = '/Users/timolenz/PycharmProjects/pySDC/pySDC/playgrounds/GPU/masterwork_timo/pickle/heat-pySDC-gpu-f.pickle'
+name_cpu = '/Users/timolenz/PycharmProjects/pySDC/pySDC/playgrounds/GPU/masterwork_timo/pickle/heat-pySDC-cpu.pickle'
+name_gpu = '/Users/timolenz/PycharmProjects/pySDC/pySDC/playgrounds/GPU/masterwork_timo/pickle/heat-pySDC-gpu.pickle'
 with open(name_cpu, 'rb') as f:
    data_cpu = pickle.load(f)
 Ns = data_cpu['Ns']
@@ -14,7 +14,7 @@ iteration = data_cpu['iteration']
 tol = data_cpu['Tolerance']
 # times_CPU = data_cpu['times']
 setup_CPU = data_cpu['setup']
-cg_CPU = data_cpu['cg-time']-0.08*data_cpu['cg-time']
+cg_CPU = data_cpu['cg-time']
 # cg_Count_CPU = data_cpu['cg-count']
 f_im_CPU = data_cpu['f-time-imp']
 f_ex_CPU = data_cpu['f-time-exp']
@@ -22,23 +22,24 @@ with open(name_gpu, 'rb') as f:
    data_gpu = pickle.load(f)
 # times_GPU = data_gpu['times']
 setup_GPU = data_gpu['setup']
-cg_GPU = data_gpu['cg-time']-0.08*data_gpu['cg-time']
+cg_GPU = data_gpu['cg-time']
 # cg_Count_GPU = data_gpu['cg-count']
 f_im_GPU = data_gpu['f-time-imp']
 f_ex_GPU = data_gpu['f-time-exp']
-
+# cg_CPU = times_CPU - (f_im_CPU+f_ex_CPU)
+# cg_GPU = times_GPU - (f_im_GPU+f_ex_GPU)
 times_CPU = cg_CPU+f_im_CPU+f_ex_CPU
 times_GPU = cg_GPU+f_im_GPU+f_ex_GPU
 # Start Plotting Time Marching and Setup
 ##############################################################################
 # plt.scatter(Ns_plot, times_GPU, color="orange", marker="*", label="Laufzeit GPU")
-plt.plot(Ns_plot, times_GPU, color="orange", ls="-", marker="*", label="Laufzeit GPU")
+plt.plot(Ns_plot, times_GPU, color="orange", ls="-", marker="s", label="Laufzeit GPU")
 # plt.scatter(Ns_plot, times_CPU, color="orange", label="Laufzeit CPU")
-plt.plot(Ns_plot, times_CPU, color="orange", ls=":", label=" Laufzeit CPU")
+plt.plot(Ns_plot, times_CPU, color="orange", ls=":", marker="o", label=" Laufzeit CPU")
 # plt.scatter(Ns_plot, setup_GPU, color="blue", label="Konfig. GPU")
-plt.plot(Ns_plot, setup_GPU, color="blue", ls="-", label="Konfig. GPU")
+plt.plot(Ns_plot, setup_GPU, color="blue", ls="-", marker="v", label="Konfig. GPU")
 # plt.scatter(Ns_plot, setup_CPU, color="blue", label="Konfig. CPU")
-plt.plot(Ns_plot, setup_CPU, color="blue", ls=":", label="Konfig. CPU")
+plt.plot(Ns_plot, setup_CPU, color="blue", ls=":", marker="h", label="Konfig. CPU")
 plt.xscale('log')
 plt.yscale('log')
 plt.xlabel('Freiheitsgrade')
@@ -54,8 +55,8 @@ plt.plot(Ns_plot, times_CPU / times_GPU)
 print(times_CPU / times_GPU)
 plt.scatter(Ns_plot, setup_CPU / setup_GPU, label="Konfig.")
 plt.plot(Ns_plot, setup_CPU / setup_GPU)
-plt.scatter(Ns_plot, cg_CPU / cg_GPU - 0.08 * (cg_CPU / cg_GPU), label="Löser")
-plt.plot(Ns_plot, cg_CPU / cg_GPU - 0.08 * (cg_CPU / cg_GPU))
+plt.scatter(Ns_plot, cg_CPU / cg_GPU, label="Löser")
+plt.plot(Ns_plot, cg_CPU / cg_GPU)
 # print(cg_CPU/cg_GPU)
 plt.scatter(Ns_plot, f_im_CPU / f_im_GPU, label="F Implizit")
 plt.plot(Ns_plot, f_im_CPU / f_im_GPU)
