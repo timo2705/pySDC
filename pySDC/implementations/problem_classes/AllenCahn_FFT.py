@@ -1,10 +1,8 @@
 import numpy as np
-import cupy as cp
-
+import time
 from pySDC.core.Errors import ParameterError, ProblemError
 from pySDC.core.Problem import ptype
-from pySDC.implementations.datatype_classes.cupy_mesh import cupy_mesh11 as mesh
-from pySDC.implementations.datatype_classes.cupy_mesh import imex_cupy_mesh11 as imex_mesh
+from pySDC.implementations.datatype_classes.mesh import mesh, imex_mesh
 
 
 class allencahn_imex(ptype):
@@ -51,38 +49,36 @@ class allencahn_imex(ptype):
         ndim = len(problem_params['nvars'])
 
         # invoke super init, passing the communicator and the local dimensions as init
-        super(allencahn_imex, self).__init__(init=(problem_params['nvars'], None, cp.dtype('float64')),
-                                               dtype_u=dtype_u, dtype_f=dtype_f, params=problem_params)
+        super(allencahn_imex, self).__init__(init=(problem_params['nvars'], None, np.dtype('float64')),
+                                             dtype_u=dtype_u, dtype_f=dtype_f, params=problem_params)
 
-        L = cp.array([self.params.L] * ndim, dtype=float)
+        L = np.array([self.params.L] * ndim, dtype=float)
 
         # get local mesh
-        X = cp.ogrid[0:self.init[0][0], 0:self.init[0][1]]
+        X = np.ogrid[0:self.init[0][0], 0:self.init[0][1]]
         N = self.init[0]
         for i in range(len(N)):
             X[i] = (X[i] * L[i] / N[i])
-        self.X = [cp.broadcast_to(x, N) for x in X]
+        self.X = [np.broadcast_to(x, N) for x in X]
 
         # get local wavenumbers and Laplace operator
         s = (slice(0, N[0]), slice(0, N[0]/2+1))
         N = self.init[0]
-        k = [cp.fft.fftfreq(n, 1. / n).astype(int) for n in N[:-1]]
-        k.append(cp.fft.rfftfreq(N[-1], 1. / N[-1]).astype(int))
+        k = [np.fft.fftfreq(n, 1. / n).astype(int) for n in N[:-1]]
+        k.append(np.fft.rfftfreq(N[-1], 1. / N[-1]).astype(int))
         K = [ki[si] for ki, si in zip(k, s)]
-        Ks = cp.meshgrid(*K, indexing='ij', sparse=True)
+        Ks = np.meshgrid(*K, indexing='ij', sparse=True)
         Lp = 2 * np.pi / L
         for i in range(ndim):
             Ks[i] = (Ks[i] * Lp[i]).astype(float)
-        K = [cp.broadcast_to(k, (N[0], int(N[0]/2+1))) for k in Ks]
-        K = cp.array(K).astype(float)
-        self.K2 = cp.sum(K * K, 0, dtype=float)
+        K = [np.broadcast_to(k, (N[0], int(N[0]/2+1))) for k in Ks]
+        K = np.array(K).astype(float)
+        self.K2 = np.sum(K * K, 0, dtype=float)
 
         # Need this for diagnostics
         self.dx = self.params.L / problem_params['nvars'][0]
         self.dy = self.params.L / problem_params['nvars'][1]
 
-        self.start_gpu = cp.cuda.Event()
-        self.end_gpu = cp.cuda.Event()
         self.f_im = 0
         self.f_ex = 0
 
@@ -105,26 +101,24 @@ class allencahn_imex(ptype):
             f.impl = -self.K2 * u
 
             if self.params.eps > 0:
-                tmp = cp.fft.irfft2(u)
+                tmp = np.fft.irfft2(u)
                 tmpf = - 2.0 / self.params.eps ** 2 * tmp * (1.0 - tmp) * (1.0 - 2.0 * tmp) - \
                     6.0 * self.params.dw * tmp * (1.0 - tmp)
-                f.expl[:] = cp.fft.rfft2(tmpf)
+                f.expl[:] = np.fft.rfft2(tmpf)
 
         else:
-            self.start_gpu.record()
-            u_hat = cp.fft.rfft2(u)
+            start = time.perf_counter()
+            u_hat = np.fft.rfft2(u)
             lap_u_hat = -self.K2 * u_hat
-            f.impl[:] = cp.fft.irfft2(lap_u_hat)
-            self.end_gpu.record()
-            self.end_gpu.synchronize()
-            self.f_im += cp.cuda.get_elapsed_time(self.start_gpu, self.end_gpu) / 1000
-            self.start_gpu.record()
+            f.impl[:] = np.fft.irfft2(lap_u_hat)
+            end = time.perf_counter()
+            self.f_im += end - start
+            start = time.perf_counter()
             if self.params.eps > 0:
                 f.expl = - 2.0 / self.params.eps ** 2 * u * (1.0 - u) * (1.0 - 2.0 * u) - \
                     6.0 * self.params.dw * u * (1.0 - u)
-            self.end_gpu.record()
-            self.end_gpu.synchronize()
-            self.f_ex += cp.cuda.get_elapsed_time(self.start_gpu, self.end_gpu) / 1000
+            end = time.perf_counter()
+            self.f_ex += end - start
         return f
 
     def solve_system(self, rhs, factor, u0, t):
@@ -148,9 +142,9 @@ class allencahn_imex(ptype):
         else:
 
             me = self.dtype_u(self.init)
-            rhs_hat = cp.fft.rfft2(rhs)
+            rhs_hat = np.fft.rfft2(rhs)
             rhs_hat /= (1.0 + factor * self.K2)
-            me[:] = cp.fft.irfft2(rhs_hat)
+            me[:] = np.fft.irfft2(rhs_hat)
 
         return me
 
@@ -171,33 +165,33 @@ class allencahn_imex(ptype):
         if self.params.init_type == 'circle':
             r2 = (self.X[0] - 0.5) ** 2 + (self.X[1] - 0.5) ** 2
             if self.params.spectral:
-                tmp = 0.5 * (1.0 + cp.tanh((self.params.radius - cp.sqrt(r2)) / (cp.sqrt(2) * self.params.eps)))
-                me[:] = cp.fft.rfft2(tmp, norm="forward")
+                tmp = 0.5 * (1.0 + np.tanh((self.params.radius - np.sqrt(r2)) / (np.sqrt(2) * self.params.eps)))
+                me[:] = np.fft.rfft2(tmp, norm="forward")
             else:
-                me[:] = 0.5 * (1.0 + cp.tanh((self.params.radius - cp.sqrt(r2)) / (cp.sqrt(2) * self.params.eps)))
+                me[:] = 0.5 * (1.0 + np.tanh((self.params.radius - np.sqrt(r2)) / (np.sqrt(2) * self.params.eps)))
         elif self.params.init_type == 'circle_rand':
             ndim = len(me.shape)
             L = int(self.params.L)
             # get random radii for circles/spheres
-            cp.random.seed(1)
+            np.random.seed(1)
             lbound = 3.0 * self.params.eps
             ubound = 0.5 - self.params.eps
-            rand_radii = (ubound - lbound) * cp.random.random_sample(size=tuple([L] * ndim)) + lbound
+            rand_radii = (ubound - lbound) * np.random.random_sample(size=tuple([L] * ndim)) + lbound
             # distribute circles/spheres
             # tmp = newDistArray(self.fft, False)
-            tmp = cp.zeros_like(me)
+            tmp = np.zeros_like(me)
             if ndim == 2:
                 for i in range(0, L):
                     for j in range(0, L):
                         # build radius
                         r2 = (self.X[0] + i - L + 0.5) ** 2 + (self.X[1] + j - L + 0.5) ** 2
                         # add this blob, shifted by 1 to avoid issues with adding up negative contributions
-                        tmp += cp.tanh((rand_radii[i, j] - cp.sqrt(r2)) / (cp.sqrt(2) * self.params.eps)) + 1
+                        tmp += np.tanh((rand_radii[i, j] - np.sqrt(r2)) / (np.sqrt(2) * self.params.eps)) + 1
             # normalize to [0,1]
             tmp *= 0.5
-            assert cp.all(tmp <= 1.0)
+            assert np.all(tmp <= 1.0)
             if self.params.spectral:
-                me[:] = cp.fft.rfft2(tmp)
+                me[:] = np.fft.rfft2(tmp)
             else:
                 me[:] = tmp[:]
         else:
@@ -230,8 +224,8 @@ class allencahn_imex_timeforcing(allencahn_imex):
 
             f.impl = -self.K2 * u
 
-            tmp = cp.zeros_like(u)
-            tmp[:] = cp.fft.rfft2(u, norm="backward")
+            tmp = np.zeros_like(u)
+            tmp[:] = np.fft.rfft2(u, norm="backward")
 
             if self.params.eps > 0:
                 tmpf = -2.0 / self.params.eps ** 2 * tmp * (1.0 - tmp) * (1.0 - 2.0 * tmp)
@@ -239,10 +233,10 @@ class allencahn_imex_timeforcing(allencahn_imex):
                 tmpf = self.dtype_f(self.init, val=0.0)
 
             # build sum over RHS without driving force
-            Rt_global = float(cp.sum(cp.fft.rfft2(f.impl, norm="backward") + tmpf))
+            Rt_global = float(np.sum(np.fft.rfft2(f.impl, norm="backward") + tmpf))
 
             # build sum over driving force term
-            Ht_global = float(cp.sum(6.0 * tmp * (1.0 - tmp)))
+            Ht_global = float(np.sum(6.0 * tmp * (1.0 - tmp)))
 
             # add/substract time-dependent driving force
             if Ht_global != 0.0:
@@ -251,22 +245,22 @@ class allencahn_imex_timeforcing(allencahn_imex):
                 dw = 0.0
 
             tmpf -= 6.0 * dw * tmp * (1.0 - tmp)
-            f.expl[:] = cp.fft.rfft2(tmpf, norm="forward")
+            f.expl[:] = np.fft.rfft2(tmpf, norm="forward")
 
         else:
 
-            u_hat = cp.fft.rfft2(u, norm="forward")
+            u_hat = np.fft.rfft2(u, norm="forward")
             lap_u_hat = -self.K2 * u_hat
-            f.impl[:] = cp.fft.rfft2(lap_u_hat, norm="backward")
+            f.impl[:] = np.fft.rfft2(lap_u_hat, norm="backward")
 
             if self.params.eps > 0:
                 f.expl = -2.0 / self.params.eps ** 2 * u * (1.0 - u) * (1.0 - 2.0 * u)
 
             # build sum over RHS without driving force
-            Rt_global = float(cp.sum(f.impl + f.expl))
+            Rt_global = float(np.sum(f.impl + f.expl))
 
             # build sum over driving force term
-            Ht_global = float(cp.sum(6.0 * u * (1.0 - u)))
+            Ht_global = float(np.sum(6.0 * u * (1.0 - u)))
 
             # add/substract time-dependent driving force
             if Ht_global != 0.0:
