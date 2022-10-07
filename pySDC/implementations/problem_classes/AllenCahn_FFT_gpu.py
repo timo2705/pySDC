@@ -1,7 +1,5 @@
 import numpy as np
 import cupy as cp
-from mpi4py import MPI
-from mpi4py_fft import PFFT
 
 from pySDC.core.Errors import ParameterError, ProblemError
 from pySDC.core.Problem import ptype
@@ -9,17 +7,12 @@ from pySDC.core.Problem import ptype
 from pySDC.implementations.datatype_classes.cupy_mesh import cupy_mesh11 as mesh
 from pySDC.implementations.datatype_classes.cupy_mesh import imex_cupy_mesh11 as imex_mesh
 
-from mpi4py_fft import newDistArray
-
 
 class allencahn_imex(ptype):
     """
-    Example implementing Allen-Cahn equation in 2-3D using mpi4py-fft for solving linear parts, IMEX time-stepping
-
-    mpi4py-fft: https://mpi4py-fft.readthedocs.io/en/latest/
+    Example implementing Allen-Cahn equation in 2-3D using cupy-fft for solving linear parts, IMEX time-stepping
 
     Attributes:
-        fft: fft object
         X: grid coordinates in real space
         K2: Laplace operator in spectral space
         dx: mesh width in x direction
@@ -57,29 +50,23 @@ class allencahn_imex(ptype):
 
         # Creating FFT structure
         ndim = len(problem_params['nvars'])
-        axes = tuple(range(ndim))
-        self.fft = PFFT(problem_params['comm'], list(problem_params['nvars']), axes=axes, dtype=cp.dtype('float64'),
-                        collapse=True)
-
-        # get test data to figure out type and dimensions
-        tmp_u = newDistArray(self.fft, problem_params['spectral'])
 
         # invoke super init, passing the communicator and the local dimensions as init
-        super(allencahn_imex, self).__init__(init=(tmp_u.shape, problem_params['comm'], tmp_u.dtype),
-                                             dtype_u=dtype_u, dtype_f=dtype_f, params=problem_params)
+        super(allencahn_imex, self).__init__(init=(problem_params['nvars'], None, cp.dtype('float64')),
+                                               dtype_u=dtype_u, dtype_f=dtype_f, params=problem_params)
 
         L = cp.array([self.params.L] * ndim, dtype=float)
 
         # get local mesh
-        X = cp.ogrid[self.fft.local_slice(False)]
-        N = self.fft.global_shape()
+        X = cp.ogrid[0:self.init[0][0], 0:self.init[0][1]]
+        N = self.init[0]
         for i in range(len(N)):
             X[i] = (X[i] * L[i] / N[i])
-        self.X = [cp.broadcast_to(x, self.fft.shape(False)) for x in X]
+        self.X = [cp.broadcast_to(x, N) for x in X]
 
         # get local wavenumbers and Laplace operator
-        s = self.fft.local_slice()
-        N = self.fft.global_shape()
+        s = (slice(0, N[0]), slice(0, N[0]/2+1))
+        N = self.init[0]
         k = [cp.fft.fftfreq(n, 1. / n).astype(int) for n in N[:-1]]
         k.append(cp.fft.rfftfreq(N[-1], 1. / N[-1]).astype(int))
         K = [ki[si] for ki, si in zip(k, s)]
@@ -87,7 +74,7 @@ class allencahn_imex(ptype):
         Lp = 2 * np.pi / L
         for i in range(ndim):
             Ks[i] = (Ks[i] * Lp[i]).astype(float)
-        K = [cp.broadcast_to(k, self.fft.shape(True)) for k in Ks]
+        K = [cp.broadcast_to(k, (N[0], int(N[0]/2+1))) for k in Ks]
         K = cp.array(K).astype(float)
         self.K2 = cp.sum(K * K, 0, dtype=float)
 
@@ -114,16 +101,16 @@ class allencahn_imex(ptype):
             f.impl = -self.K2 * u
 
             if self.params.eps > 0:
-                tmp = self.fft.backward(u)
+                tmp = cp.fft.irfft2(u)
                 tmpf = - 2.0 / self.params.eps ** 2 * tmp * (1.0 - tmp) * (1.0 - 2.0 * tmp) - \
                     6.0 * self.params.dw * tmp * (1.0 - tmp)
-                f.expl[:] = self.fft.forward(tmpf)
+                f.expl[:] = cp.fft.rfft2(tmpf)
 
         else:
 
-            u_hat = self.fft.forward(u)
+            u_hat = cp.fft.rfft2(u)
             lap_u_hat = -self.K2 * u_hat
-            f.impl[:] = self.fft.backward(lap_u_hat, f.impl)
+            f.impl[:] = cp.fft.irfft2(lap_u_hat)
 
             if self.params.eps > 0:
                 f.expl = - 2.0 / self.params.eps ** 2 * u * (1.0 - u) * (1.0 - 2.0 * u) - \
@@ -152,9 +139,9 @@ class allencahn_imex(ptype):
         else:
 
             me = self.dtype_u(self.init)
-            rhs_hat = self.fft.forward(rhs)
+            rhs_hat = cp.fft.rfft2(rhs)
             rhs_hat /= (1.0 + factor * self.K2)
-            me[:] = self.fft.backward(rhs_hat)
+            me[:] = cp.fft.irfft2(rhs_hat)
 
         return me
 
@@ -170,12 +157,13 @@ class allencahn_imex(ptype):
         """
 
         assert t == 0, 'ERROR: u_exact only valid for t=0'
+
         me = self.dtype_u(self.init, val=0.0)
         if self.params.init_type == 'circle':
             r2 = (self.X[0] - 0.5) ** 2 + (self.X[1] - 0.5) ** 2
             if self.params.spectral:
                 tmp = 0.5 * (1.0 + cp.tanh((self.params.radius - cp.sqrt(r2)) / (cp.sqrt(2) * self.params.eps)))
-                me[:] = self.fft.forward(tmp)
+                me[:] = cp.fft.rfft2(tmp, norm="forward")
             else:
                 me[:] = 0.5 * (1.0 + cp.tanh((self.params.radius - cp.sqrt(r2)) / (cp.sqrt(2) * self.params.eps)))
         elif self.params.init_type == 'circle_rand':
@@ -187,7 +175,8 @@ class allencahn_imex(ptype):
             ubound = 0.5 - self.params.eps
             rand_radii = (ubound - lbound) * cp.random.random_sample(size=tuple([L] * ndim)) + lbound
             # distribute circles/spheres
-            tmp = newDistArray(self.fft, False)
+            # tmp = newDistArray(self.fft, False)
+            tmp = cp.zeros_like(me)
             if ndim == 2:
                 for i in range(0, L):
                     for j in range(0, L):
@@ -199,7 +188,7 @@ class allencahn_imex(ptype):
             tmp *= 0.5
             assert cp.all(tmp <= 1.0)
             if self.params.spectral:
-                me[:] = self.fft.forward(tmp)
+                me[:] = cp.fft.rfft2(tmp)
             else:
                 me[:] = tmp[:]
         else:
@@ -232,8 +221,8 @@ class allencahn_imex_timeforcing(allencahn_imex):
 
             f.impl = -self.K2 * u
 
-            tmp = newDistArray(self.fft, False)
-            tmp[:] = self.fft.backward(u, tmp)
+            tmp = cp.zeros_like(u)
+            tmp[:] = cp.fft.rfft2(u, norm="backward")
 
             if self.params.eps > 0:
                 tmpf = -2.0 / self.params.eps ** 2 * tmp * (1.0 - tmp) * (1.0 - 2.0 * tmp)
@@ -241,18 +230,10 @@ class allencahn_imex_timeforcing(allencahn_imex):
                 tmpf = self.dtype_f(self.init, val=0.0)
 
             # build sum over RHS without driving force
-            Rt_local = float(cp.sum(self.fft.backward(f.impl) + tmpf))
-            if self.params.comm is not None:
-                Rt_global = self.params.comm.allreduce(sendobj=Rt_local, op=MPI.SUM)
-            else:
-                Rt_global = Rt_local
+            Rt_global = float(cp.sum(cp.fft.rfft2(f.impl, norm="backward") + tmpf))
 
             # build sum over driving force term
-            Ht_local = float(cp.sum(6.0 * tmp * (1.0 - tmp)))
-            if self.params.comm is not None:
-                Ht_global = self.params.comm.allreduce(sendobj=Ht_local, op=MPI.SUM)
-            else:
-                Ht_global = Rt_local
+            Ht_global = float(cp.sum(6.0 * tmp * (1.0 - tmp)))
 
             # add/substract time-dependent driving force
             if Ht_global != 0.0:
@@ -261,30 +242,22 @@ class allencahn_imex_timeforcing(allencahn_imex):
                 dw = 0.0
 
             tmpf -= 6.0 * dw * tmp * (1.0 - tmp)
-            f.expl[:] = self.fft.forward(tmpf)
+            f.expl[:] = cp.fft.rfft2(tmpf, norm="forward")
 
         else:
 
-            u_hat = self.fft.forward(u)
+            u_hat = cp.fft.rfft2(u, norm="forward")
             lap_u_hat = -self.K2 * u_hat
-            f.impl[:] = self.fft.backward(lap_u_hat, f.impl)
+            f.impl[:] = cp.fft.rfft2(lap_u_hat, norm="backward")
 
             if self.params.eps > 0:
                 f.expl = -2.0 / self.params.eps ** 2 * u * (1.0 - u) * (1.0 - 2.0 * u)
 
             # build sum over RHS without driving force
-            Rt_local = float(cp.sum(f.impl + f.expl))
-            if self.params.comm is not None:
-                Rt_global = self.params.comm.allreduce(sendobj=Rt_local, op=MPI.SUM)
-            else:
-                Rt_global = Rt_local
+            Rt_global = float(cp.sum(f.impl + f.expl))
 
             # build sum over driving force term
-            Ht_local = float(cp.sum(6.0 * u * (1.0 - u)))
-            if self.params.comm is not None:
-                Ht_global = self.params.comm.allreduce(sendobj=Ht_local, op=MPI.SUM)
-            else:
-                Ht_global = Rt_local
+            Ht_global = float(cp.sum(6.0 * u * (1.0 - u)))
 
             # add/substract time-dependent driving force
             if Ht_global != 0.0:

@@ -121,7 +121,6 @@ class allencahn_imex(ptype):
             u_hat = self.fft.forward(u)
             lap_u_hat = -self.K2 * u_hat
             f.impl[:] = self.fft.backward(lap_u_hat, f.impl)
-
             if self.params.eps > 0:
                 f.expl = - 2.0 / self.params.eps ** 2 * u * (1.0 - u) * (1.0 - 2.0 * u) - \
                     6.0 * self.params.dw * u * (1.0 - u)
