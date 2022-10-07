@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 name_cpu = f'/Users/timolenz/PycharmProjects/pySDC/pySDC/playgrounds/GPU/masterwork_timo/pickle/ac-fft-pySDC-cpu.pickle'
-name_gpu = '/Users/timolenz/PycharmProjects/pySDC/pySDC/playgrounds/GPU/masterwork_timo/pickle/ac-fft-jusuf-pySDC-gpu.pickle'
+name_gpu = '/Users/timolenz/PycharmProjects/pySDC/pySDC/playgrounds/GPU/masterwork_timo/pickle/ac-fft-pySDC-gpu.pickle'
 
 with open(name_cpu, 'rb') as f:
    data_cpu = pickle.load(f)
@@ -31,12 +31,16 @@ f_ex_GPU = data_gpu['f-time-exp']
 
 times_CPU = cg_CPU+f_im_CPU+f_ex_CPU
 times_GPU = cg_GPU+f_im_GPU+f_ex_GPU
-# Start Plotting Time Marching
+# Start Plotting Time Marching & Setup Time
 ##############################################################################
-plt.scatter(Ns_plot, times_GPU, label="GPU")
-plt.plot(Ns_plot, times_GPU)
-plt.scatter(Ns_plot, times_CPU, label="CPU")
-plt.plot(Ns_plot, times_CPU)
+# plt.scatter(Ns_plot, times_GPU, color="orange", marker="*", label="Laufzeit GPU")
+plt.plot(Ns_plot, times_GPU, color="orange", ls="-", marker="s", label="Laufzeit GPU")
+# plt.scatter(Ns_plot, times_CPU, color="orange", label="Laufzeit CPU")
+plt.plot(Ns_plot, times_CPU, color="orange", ls=":", marker="o", label=" Laufzeit CPU")
+# plt.scatter(Ns_plot, setup_GPU, color="blue", label="Konfig. GPU")
+plt.plot(Ns_plot, setup_GPU, color="blue", ls="-", marker="v", label="Konfig. GPU")
+# plt.scatter(Ns_plot, setup_CPU, color="blue", label="Konfig. CPU")
+plt.plot(Ns_plot, setup_CPU, color="blue", ls=":", marker="h", label="Konfig. CPU")
 plt.xscale('log')
 plt.yscale('log')
 # plt.title("Simple SDC (GMRES) Allen-Cahn 2D:\nGPU vs CPU only time_marching")
@@ -47,29 +51,16 @@ plt.legend()
 # plt.savefig('pdfs/allen-cahn_jusuf_tm_log2.pdf')
 plt.show()
 plt.clf()
-# Start Plotting Setup Time
-##############################################################################
-plt.scatter(Ns_plot, setup_GPU, label="GPU")
-plt.plot(Ns_plot, setup_GPU)
-plt.scatter(Ns_plot, setup_CPU, label="CPU")
-plt.plot(Ns_plot, setup_CPU)
-plt.xscale('log')
-plt.yscale('log')
-plt.title("pySDC Allen-Cahn 2D FFT:\nGPU vs CPU only Setup")
-plt.xlabel('degrees of freedom')
-plt.ylabel('Time in s')
-plt.legend()
-# plt.savefig('pdfs/allen-cahn_jusuf_setup_log2.pdf')
-plt.show()
-plt.clf()
 # Start Plotting Factors
 ##############################################################################
-plt.scatter(Ns_plot, times_CPU/times_GPU, label="Factor marching")
+plt.plot(Ns_plot, times_CPU/times_GPU, label="Factor marching")
 print(times_CPU/times_GPU)
 print(times_GPU)
-plt.scatter(Ns_plot, setup_CPU/setup_GPU, label="Factor setup")
-plt.scatter(Ns_plot, cg_CPU/cg_GPU-0.08*(cg_CPU/cg_GPU), label="Factor cg")
+plt.plot(Ns_plot, setup_CPU/setup_GPU, label="Factor setup")
+plt.plot(Ns_plot, cg_CPU/cg_GPU, label="Factor cg")
 print(cg_CPU/cg_GPU)
+plt.plot(Ns_plot, f_im_CPU/f_im_GPU, label="Factor f implizit")
+plt.plot(Ns_plot, f_ex_CPU/f_ex_GPU, label="Factor f explizit")
 plt.xscale('log')
 plt.yscale('log')
 plt.title("pySDC Allen-Cahn 2D FFT:\nCPU / GPU")
@@ -77,17 +68,6 @@ plt.xlabel('degrees of freedom')
 plt.ylabel('Factor')
 plt.legend()
 # plt.savefig('pdfs/allen-cahn_jusuf_factors_log2.pdf')
-plt.show()
-plt.clf()
-plt.scatter(Ns_plot, f_im_CPU/f_im_GPU, label="Factor f implizit")
-plt.scatter(Ns_plot, f_ex_CPU/f_ex_GPU, label="Factor f explizit")
-plt.xscale('log')
-plt.yscale('log')
-plt.title("pySDC Allen-Cahn 2D FFT:\nCPU / GPU")
-plt.xlabel('degrees of freedom')
-plt.ylabel('Factor')
-plt.legend()
-# plt.savefig('pdfs/allen-cahn_jusuf_factors_f_log2.pdf')
 plt.show()
 plt.clf()
 """

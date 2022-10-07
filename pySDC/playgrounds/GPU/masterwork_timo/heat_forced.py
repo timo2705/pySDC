@@ -11,8 +11,8 @@ import numpy as np
 import pickle
 import matplotlib.pyplot as plt
 
-name = 'pickle/heat-pySDC-cpu.pickle'
-# name = 'pickle/heat-pySDC-gpu.pickle'
+name = 'pickle/heat-pySDC-cpu-1.pickle'
+# name = 'pickle/heat-pySDC-gpu-1.pickle'
 Ns = np.asarray([16, 16, 32, 64, 128, 256])
 D = 3
 # Ns = np.asarray([128, 256, 512])
@@ -60,7 +60,7 @@ space_transfer_params['periodic'] = True
 
 # setup parameters "in time"
 t0 = 0
-schritte = 8
+schritte = 1
 Tend = schritte*level_params['dt']
 
 # initialize controller parameters

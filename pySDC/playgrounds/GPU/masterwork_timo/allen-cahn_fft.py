@@ -54,7 +54,7 @@ step_params['maxiter'] = 50
 
 # setup parameters "in time"
 t0 = 0
-schritte = 4
+schritte = 1
 Tend = schritte*1E-03
 
 # initialize controller parameters
