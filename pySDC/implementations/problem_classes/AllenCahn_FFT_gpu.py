@@ -64,7 +64,7 @@ class allencahn_imex(ptype):
         self.X = [cp.broadcast_to(x, N) for x in X]
 
         # get local wavenumbers and Laplace operator
-        s = (slice(0, N[0]), slice(0, N[0]/2+1))
+        s = (slice(0, N[0]), slice(0, int(N[0]/2+1)))
         N = self.init[0]
         k = [cp.fft.fftfreq(n, 1. / n).astype(int) for n in N[:-1]]
         k.append(cp.fft.rfftfreq(N[-1], 1. / N[-1]).astype(int))
