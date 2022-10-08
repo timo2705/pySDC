@@ -7,7 +7,6 @@ from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 from pySDC.implementations.problem_classes.AllenCahn_FFT_gpu import allencahn_imex as ac_gpu
 from pySDC.implementations.problem_classes.AllenCahn_FFT import allencahn_imex as ac_cpu
 from pySDC.helpers.gpu_hook import hook_gpu
-import matplotlib.pyplot as plt
 from pySDC.helpers.stats_helper import filter_stats, sort_stats
 
 name = 'pickle/ac-fft-pySDC-patch.pickle'
@@ -129,27 +128,27 @@ for i in range(len(Ns)):
     f_im_gpu[i] = P.f_im
     f_ex_gpu[i] = P.f_ex
 
-# write down stats to .pickle file
-data = {
-    'Ns': Ns[1:],
-    'D': 2,
-    'dt': level_params['dt'],
-    'schritte': schritte,
-    'iteration': step_params['maxiter'],
-    'times-cpu': times_cpu[1:],
-    'setup-cpu': setup_cpu[1:],
-    'cg-time-cpu': cg_cpu[1:],
-    # 'cg-count': cg_Count_cpu[1:],
-    'f-time-imp-cpu': f_im_cpu[1:],
-    'f-time-exp-cpu': f_ex_cpu[1:],
-    'times-gpu': times_gpu[1:],
-    'setup-gpu': setup_gpu[1:],
-    'cg-time-gpu': cg_gpu[1:],
-    # 'cg-count': cg_Count_gpu[1:],
-    'f-time-imp-gpu': f_im_gpu[1:],
-    'f-time-exp-gpu': f_ex_gpu[1:]
-}
-with open(name, 'wb') as f:
-    pickle.dump(data, f)
-# print(data)
+    # write down stats to .pickle file
+    data = {
+        'Ns': Ns[1:],
+        'D': 2,
+        'dt': level_params['dt'],
+        'schritte': schritte,
+        'iteration': step_params['maxiter'],
+        'times-cpu': times_cpu[1:],
+        'setup-cpu': setup_cpu[1:],
+        'cg-time-cpu': cg_cpu[1:],
+        # 'cg-count': cg_Count_cpu[1:],
+        'f-time-imp-cpu': f_im_cpu[1:],
+        'f-time-exp-cpu': f_ex_cpu[1:],
+        'times-gpu': times_gpu[1:],
+        'setup-gpu': setup_gpu[1:],
+        'cg-time-gpu': cg_gpu[1:],
+        # 'cg-count': cg_Count_gpu[1:],
+        'f-time-imp-gpu': f_im_gpu[1:],
+        'f-time-exp-gpu': f_ex_gpu[1:]
+    }
+    with open(name, 'wb') as f:
+        pickle.dump(data, f)
+    # print(data)
 print('done')
