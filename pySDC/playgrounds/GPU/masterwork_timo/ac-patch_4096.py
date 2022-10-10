@@ -24,8 +24,8 @@ sweeper_params['initial_guess'] = 'zero'
 
 # initialize problem parameters
 problem_params = dict()
-problem_params['L'] = 32.0
-problem_params['nvars'] = (1024, 1024)
+# problem_params['L'] = 32.0
+# problem_params['nvars'] = (1024, 1024)
 # problem_params['L'] = 128.0
 # problem_params['nvars'] = (4096, 4096)
 problem_params['eps'] = 0.04
