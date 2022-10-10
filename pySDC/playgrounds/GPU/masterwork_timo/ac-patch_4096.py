@@ -25,8 +25,8 @@ sweeper_params['initial_guess'] = 'zero'
 # initialize problem parameters
 problem_params = dict()
 # problem_params['L'] = 32.0
-# problem_params['nvars'] = (1024, 1024)
-problem_params['L'] = 128.0
+# problem_params['nvars'] = (2048, 2048)
+problem_params['L'] = 32.0
 problem_params['nvars'] = (4096, 4096)
 problem_params['eps'] = 0.04
 problem_params['dw'] = -10  # -23.6
@@ -58,7 +58,7 @@ controller = controller_nonMPI(num_procs=1, controller_params=controller_params,
 
 # set time parameters
 t0 = 0.0
-schritte = 250
+schritte = 100
 Tend = t0 + 1 * level_params['dt']
 
 # get initial values on finest level
@@ -66,15 +66,17 @@ P = controller.MS[0].levels[0].prob
 uinit = P.u_exact(t0)
 plt.imshow(cp.asnumpy(uinit))
 plt.title("Time = {time:.3f}".format(time=t0))
+plt.colorbar()
 plt.savefig("pngs/uend_000.png")
 plt.clf()
 for i in range(1, schritte+1):
     # call main function to get things done...
     uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
-    if i % 15 == 0:
+    if i % 5 == 0:
         print("saved a png at Tend = {time:.3f}".format(time=Tend))
         plt.imshow(cp.asnumpy(uend))
         plt.title("Time = {time:.3f}".format(time=Tend))
+        plt.colorbar()
         plt.savefig("pngs/uend_{index:03d}.png".format(index=i))
         plt.clf()
     t0 = Tend
@@ -82,6 +84,7 @@ for i in range(1, schritte+1):
     uinit = uend
 plt.imshow(cp.asnumpy(uend))
 plt.title("Time = {time:.3f}".format(time=Tend))
+plt.colorbar()
 plt.savefig("pngs/uend_{index:03d}.png".format(index=i))
 plt.clf()
 end = time.perf_counter()
