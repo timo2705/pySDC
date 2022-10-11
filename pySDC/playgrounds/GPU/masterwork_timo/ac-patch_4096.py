@@ -25,9 +25,11 @@ sweeper_params['initial_guess'] = 'zero'
 # initialize problem parameters
 problem_params = dict()
 # problem_params['L'] = 32.0
-# problem_params['nvars'] = (2048, 2048)
-problem_params['L'] = 32.0
-problem_params['nvars'] = (4096, 4096)
+# problem_params['nvars'] = (2048, 2048)  # für 128x128
+# problem_params['nvars'] = (1024, 1024)  # für 64x64
+problem_params['nvars'] = (512, 512)  # für 32x32
+problem_params['L'] = 16.0
+# problem_params['nvars'] = (4096, 4096)
 problem_params['eps'] = 0.04
 problem_params['dw'] = -10  # -23.6
 problem_params['radius'] = 0.08
@@ -58,7 +60,7 @@ controller = controller_nonMPI(num_procs=1, controller_params=controller_params,
 
 # set time parameters
 t0 = 0.0
-schritte = 100
+schritte = 250
 Tend = t0 + 1 * level_params['dt']
 
 # get initial values on finest level
