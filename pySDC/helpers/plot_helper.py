@@ -24,22 +24,23 @@ def setup_mpl(font_size=8, reset=False):
         "font.serif": [],  # blank entries should cause plots to inherit fonts from the document
         "font.sans-serif": [],
         "font.monospace": [],
-        "axes.labelsize": 13,  # LaTeX default is 10pt font.
-        "axes.linewidth": 0.5,
+        "axes.labelsize": 14,  # LaTeX default is 10pt font.
+        "axes.linewidth": 0.7,
         "font.size": font_size,
-        "legend.fontsize": 9,  # Make the legend/label fonts a little smaller
+        "legend.fontsize": 10,  # Make the legend/label fonts a little smaller
         "legend.numpoints": 1,
-        "xtick.labelsize": 11,
-        "xtick.major.width": 0.9,  # major tick width in points
-        "xtick.minor.width": 0.5,
-        "ytick.labelsize": 11,
-        "ytick.major.width": 0.9,  # major tick width in points
-        "ytick.minor.width": 0.5,
-        "lines.markersize": 7,
-        "lines.markeredgewidth": 0.5,
+        "xtick.labelsize": 12,
+        "xtick.major.width": 1,  # major tick width in points
+        "xtick.minor.width": 0.6,
+        "ytick.labelsize": 12,
+        "ytick.major.width": 1,  # major tick width in points
+        "ytick.minor.width": 0.6,
+        "lines.markersize": 10,
+        "lines.markeredgewidth": 1,
+        "lines.linewidth": 2.5,
         "grid.linewidth": 0.5,
         "grid.linestyle": '-',
-        "grid.alpha": 0.25,
+        "grid.alpha": 0.4,
         "figure.subplot.hspace": 0.0,
         "savefig.pad_inches": 0.01,
     }
