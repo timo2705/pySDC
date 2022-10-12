@@ -27,7 +27,7 @@ def setup_mpl(font_size=8, reset=False):
         "axes.labelsize": 14,  # LaTeX default is 10pt font.
         "axes.linewidth": 0.7,
         "font.size": font_size,
-        "legend.fontsize": 10,  # Make the legend/label fonts a little smaller
+        "legend.fontsize": 12,  # Make the legend/label fonts a little smaller
         "legend.numpoints": 1,
         "xtick.labelsize": 12,
         "xtick.major.width": 1,  # major tick width in points

@@ -3,9 +3,9 @@ import matplotlib.pyplot as plt
 from pySDC.helpers.plot_helper import setup_mpl, savefig
 setup_mpl(12)
 
-name_cpu = '/Users/timolenz/PycharmProjects/pySDC/pySDC/playgrounds/GPU/masterwork_timo/pickle/heat-pySDC-cpu-1.pickle'
-name_gpu = '/Users/timolenz/PycharmProjects/pySDC/pySDC/playgrounds/GPU/masterwork_timo/pickle/heat-pySDC-gpu-1.pickle'
-# name_gpu = '/Users/timolenz/PycharmProjects/pySDC/pySDC/playgrounds/GPU/masterwork_timo/pickle/heat-pySDC-gpu-1-odtype.pickle'
+name_cpu = 'pickle/heat-pySDC-cpu-1.pickle'
+name_gpu = 'pickle/heat-pySDC-gpu-1.pickle'
+# name_gpu = 'pickle/heat-pySDC-gpu-1-odtype.pickle'
 with open(name_cpu, 'rb') as f:
    data_cpu = pickle.load(f)
 Ns = data_cpu['Ns']
@@ -35,22 +35,22 @@ times_CPU = cg_CPU+f_im_CPU+f_ex_CPU
 times_GPU = cg_GPU+f_im_GPU+f_ex_GPU
 # Start Plotting Time Marching and Setup
 ##############################################################################
-plt.plot(Ns_plot, times_GPU, color="dodgerblue", ls="-", marker="v", label="Laufzeit GPU")
-plt.plot(Ns_plot, times_CPU, color="orange", ls="-", marker="D", label=" Laufzeit CPU")
+plt.plot(Ns_plot, times_GPU, color="dodgerblue", ls="-", marker="v", label="Zeitschritt GPU")
+plt.plot(Ns_plot, times_CPU, color="orange", ls="-", marker="D", label="Zeitschritt CPU")
 plt.plot(Ns_plot, setup_GPU, color="dodgerblue", ls=":", marker="s", label="Konfig. GPU")
 plt.plot(Ns_plot, setup_CPU, color="orange", ls=":", marker="X", label="Konfig. CPU")
 plt.xscale('log')
 plt.yscale('log')
 plt.xlabel('Freiheitsgrade')
 plt.ylabel('Zeit in s')
-plt.legend()
+plt.legend(bbox_to_anchor=(1.04, 0.5), loc="center left")
 plt.grid()
-# plt.savefig('pdfs/allen-cahn_jusuf_tm_log2.pdf')
-plt.show()
+savefig('pdfs/heat-ndtype', save_pgf=False, save_png=False)
+# plt.show()
 plt.clf()
 # Start Plotting Factors
 ##############################################################################
-plt.plot(Ns_plot, times_CPU / times_GPU, color="dodgerblue", marker="d", label="Laufzeit")
+plt.plot(Ns_plot, times_CPU / times_GPU, color="dodgerblue", marker="d", label="Zeitschritt")
 print(times_CPU / times_GPU)
 plt.plot(Ns_plot, setup_CPU / setup_GPU, color="darkgoldenrod", marker="^", label="Konfig.")
 plt.plot(Ns_plot, cg_CPU / cg_GPU, color="violet", marker="X", label="Löser")
@@ -60,10 +60,10 @@ plt.xscale('log')
 plt.yscale('log')
 plt.xlabel('Freiheitsgrade')
 plt.ylabel('Faktor')
-plt.legend()
+plt.legend(bbox_to_anchor=(1.04, 0.5), loc="center left")
 plt.grid()
-# plt.savefig('pdfs/allen-cahn_jusuf_factors_log2.pdf')
-plt.show()
+savefig('pdfs/heat-factor-ndytpe', save_pgf=False, save_png=False)
+# plt.show()
 plt.clf()
 # Start Plotting All Times
 ##############################################################################
@@ -100,21 +100,23 @@ plt.show()
 plt.clf()
 """
 fig, (ax1, ax2) = plt.subplots(nrows=1, ncols=2, sharex=True, sharey=True, figsize=(11, 5))
-ax1.plot(Ns_plot, times_GPU, color="dodgerblue", marker="d", label="Laufzeit")
+ax1.plot(Ns_plot, times_GPU, color="dodgerblue", marker="d", label="Zeitschritt")
 ax1.plot(Ns_plot, cg_GPU, color="violet", marker="X", label="Löser")
 ax1.plot(Ns_plot, f_im_GPU, color="orange", marker="o", label="F Implizit")
 ax1.plot(Ns_plot, f_ex_GPU, color="seagreen", marker="s", label="F Explizit")
 ax1.set_title('GPU')
 ax1.set_xlabel('Freiheitsgrade')
 ax1.set_ylabel('Zeit in s')
-ax1.legend()
+# ax1.legend()
 ax1.grid()
-ax2.plot(Ns_plot, times_CPU, color="dodgerblue", marker="d", label="Laufzeit")
+ax2.plot(Ns_plot, times_CPU, color="dodgerblue", marker="d", label="Zeitschritt")
 ax2.plot(Ns_plot, cg_CPU, color="violet", marker="X", label="Löser")
 ax2.plot(Ns_plot, f_im_CPU, color="orange", marker="o", label="F Implizit")
 ax2.plot(Ns_plot, f_ex_CPU, color="seagreen", marker="s", label="F Explizit")
 ax2.set_title('CPU')
+ax2.set_xlabel('Freiheitsgrade')
 ax2.grid()
+ax2.legend(bbox_to_anchor=(1.04, 0.5), loc="center left")
 plt.xscale('log')
 plt.yscale('log')
 # plt.ylim([f_im_CPU[0]-0.3*f_im_CPU[0], times_CPU[-1]+0.3*times_CPU[-1]])
@@ -122,6 +124,6 @@ plt.yscale('log')
 # plt.ylabel('Zeit in s')
 # plt.legend()
 fig.tight_layout()
-plt.show()
-# plt.savefig('pdfs/allen-cahn_jusuf_tm_log2.pdf')
+# plt.show()
+savefig('pdfs/heat-times-ndtype', save_pgf=False, save_png=False)
 plt.clf()
