@@ -3,7 +3,12 @@ from pySDC.implementations.collocation_classes.gauss_radau_right import CollGaus
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
 from pySDC.helpers.stats_helper import filter_stats, sort_stats
+from pySDC.helpers.gpu_hook import hook_gpu
+from mpi4py import MPI
 import numpy as np
+
+# set MPI communicator
+comm = MPI.COMM_WORLD
 
 # initialize problem parameters
 problem_params = dict()
@@ -15,6 +20,7 @@ problem_params['newton_maxiter'] = 100
 problem_params['newton_tol'] = 1E-08
 problem_params['lin_tol'] = 1E-10
 problem_params['lin_maxiter'] = 99
+problem_params['comm'] = comm
 
 # initialize level parameters
 level_params = dict()
@@ -42,6 +48,7 @@ Tend = schritte*1E-03
 # initialize controller parameters
 controller_params = dict()
 controller_params['logger_level'] = 30
+controller_params['hook_class'] = hook_gpu
 
 # fill description dictionary for easy step instantiation
 description = dict()
