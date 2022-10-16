@@ -3,13 +3,14 @@ from pySDC.implementations.collocation_classes.gauss_radau_right import CollGaus
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
 from pySDC.helpers.stats_helper import filter_stats, sort_stats
+import matplotlib.pyplot as plt
 
 # initialize problem parameters
 problem_params = dict()
 problem_params['nu'] = 2
 problem_params['eps'] = 0.04
 problem_params['radius'] = 0.25
-problem_params['nvars'] = (512, 512)
+problem_params['nvars'] = (32, 32)
 problem_params['newton_maxiter'] = 100
 problem_params['newton_tol'] = 1E-08
 problem_params['lin_tol'] = 1E-10
@@ -35,7 +36,7 @@ step_params['maxiter'] = 50
 
 # setup parameters "in time"
 t0 = 0
-schritte = 8
+schritte = 1
 Tend = schritte*1E-03
 
 # initialize controller parameters
@@ -57,7 +58,12 @@ controller = controller_nonMPI(num_procs=1, controller_params=controller_params,
 # get initial values on finest level
 P = controller.MS[0].levels[0].prob
 uinit = P.u_exact(t0)
-
+plt.imshow(uinit)  # , extent=[-0.5, 0.5, -0.5, 0.5])
+# plt.title("Time = {time:.3f}".format(time=t0))
+# plt.colorbar()
+plt.savefig("masterwork_timo/pngs/32x32.png")
+plt.clf()
+exit()
 # call main function to get things done...
 uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
 timing = sort_stats(filter_stats(stats, type='timing_run'), sortby='time')
