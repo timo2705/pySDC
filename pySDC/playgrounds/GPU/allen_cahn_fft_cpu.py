@@ -1,5 +1,5 @@
 from pySDC.implementations.problem_classes.AllenCahn_2D_FFT import allencahn2d_imex
-from pySDC.implementations.collocation_classes.gauss_radau_right import CollGaussRadau_Right
+from pySDC.core.Collocation import CollBase as Collocation
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
 from pySDC.helpers.stats_helper import filter_stats, sort_stats
@@ -24,7 +24,9 @@ level_params['nsweeps'] = 1
 
 # initialize sweeper parameters
 sweeper_params = dict()
-sweeper_params['collocation_class'] = CollGaussRadau_Right
+sweeper_params['collocation_class'] = Collocation
+sweeper_params['node_type'] = 'LEGENDRE'
+sweeper_params['quad_type'] = 'RADAU-RIGHT'
 sweeper_params['QI'] = ['LU']
 sweeper_params['QE'] = ['PIC']
 sweeper_params['num_nodes'] = 3

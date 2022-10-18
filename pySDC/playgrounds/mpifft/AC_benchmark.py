@@ -2,8 +2,8 @@ import sys
 import numpy as np
 from mpi4py import MPI
 
-from pySDC.helpers.stats_helper import filter_stats, sort_stats
-from pySDC.implementations.collocation_classes.gauss_radau_right import CollGaussRadau_Right
+from pySDC.helpers.stats_helper import get_sorted
+
 from pySDC.implementations.controller_classes.controller_MPI import controller_MPI
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 
@@ -46,15 +46,15 @@ def run_simulation(name=''):
 
     # initialize level parameters
     level_params = dict()
-    level_params['restol'] = 1E-08
-    level_params['dt'] = 1E-03
-    level_params['nsweeps'] = 1
+    level_params['restol'] = 1e-08
+    level_params['dt'] = 1e-03
+    level_params['nsweeps'] = [3, 1]
 
     # initialize sweeper parameters
     sweeper_params = dict()
-    sweeper_params['collocation_class'] = CollGaussRadau_Right
-    sweeper_params['num_nodes'] = 3
-    sweeper_params['QI'] = 'LU'  # For the IMEX sweeper, the LU-trick can be activated for the implicit part
+    sweeper_params['quad_type'] = 'RADAU-RIGHT'
+    sweeper_params['num_nodes'] = [3]
+    sweeper_params['QI'] = ['LU']  # For the IMEX sweeper, the LU-trick can be activated for the implicit part
     sweeper_params['initial_guess'] = 'zero'
 
     # initialize problem parameters
@@ -90,7 +90,7 @@ def run_simulation(name=''):
 
     # set time parameters
     t0 = 0.0
-    Tend = 32 * level_params['dt']
+    Tend = 32 * 0.001
 
     # instantiate controller
     controller = controller_MPI(controller_params=controller_params, description=description, comm=time_comm)
@@ -104,10 +104,40 @@ def run_simulation(name=''):
 
     # call main function to get things done...
     uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
-    plt.imshow(uend)
-    plt.show()
-    timing = sort_stats(filter_stats(stats, type='timing_run'), sortby='time')
-    print('Laufzeit:', timing[0][1])
+
+    if space_rank == 0:
+
+        # filter statistics by type (number of iterations)
+        iter_counts = get_sorted(stats, type='niter', sortby='time')
+
+        print()
+
+        niters = np.array([item[1] for item in iter_counts])
+        out = f'Mean number of iterations on rank {time_rank}: {np.mean(niters):.4f}'
+        print(out)
+
+        timing = get_sorted(stats, type='timing_setup', sortby='time')
+        out = f'Setup time on rank {time_rank}: {timing[0][1]:.4f} sec.'
+        print(out)
+
+        timing = get_sorted(stats, type='timing_run', sortby='time')
+        out = f'Time to solution on rank {time_rank}: {timing[0][1]:.4f} sec.'
+        print(out)
+
+        print()
+
+        # convert filtered statistics to list of computed radii, sorted by time
+        computed_radii = get_sorted(stats, type='computed_radius', sortby='time')
+        exact_radii = get_sorted(stats, type='exact_radius', sortby='time')
+
+        # print radii and error over time
+        for cr, er in zip(computed_radii, exact_radii):
+            if er[1] > 0:
+                err = abs(cr[1] - er[1]) / er[1]
+            else:
+                err = 1.0
+            out = f'Computed/exact/error radius for time {cr[0]:6.4f}: ' f'{cr[1]:6.4f} / {er[1]:6.4f} / {err:6.4e}'
+            print(out)
 
 
 if __name__ == "__main__":

@@ -10,7 +10,6 @@ from pySDC.implementations.datatype_classes.cupy_mesh import cupy_mesh11 as cupy
 from pySDC.implementations.datatype_classes.cupy_mesh import imex_cupy_mesh11 as imex_cupy_mesh
 from pySDC.implementations.datatype_classes.cupy_mesh import comp2_cupy_mesh11 as comp2_cupy_mesh
 
-
 # http://www.personal.psu.edu/qud2/Res/Pre/dz09sisc.pdf
 
 
@@ -30,8 +29,8 @@ class allencahn_fullyimplicit(ptype):
 
         Args:
             problem_params (dict): custom parameters for the example
-            dtype_u: mesh data type (will be passed parent class)
-            dtype_f: mesh data type (will be passed parent class)
+            dtype_u: cupy_mesh data type (will be passed parent class)
+            dtype_f: cupy_mesh data type (will be passed parent class)
         """
 
         # these parameters will be used later, so assert their existence
@@ -50,10 +49,9 @@ class allencahn_fullyimplicit(ptype):
             raise ProblemError('the setup requires nvars = 2^p per dimension')
 
         # invoke super init, passing number of dofs, dtype_u and dtype_f
-        # super(allencahn_fullyimplicit, self).__init__((problem_params['nvars'], None, np.dtype('float64')),
-        #                                               dtype_u, dtype_f, problem_params)
-        super(allencahn_fullyimplicit, self).__init__((problem_params['nvars'], None, cp.dtype('float64')),
-                                                      dtype_u, dtype_f, problem_params)
+        super(allencahn_fullyimplicit, self).__init__(
+            (problem_params['nvars'], None, cp.dtype('float64')), dtype_u, dtype_f, problem_params
+        )
 
         # compute dx and get discretization matrix A
         self.dx = 1.0 / self.params.nvars[0]
@@ -77,18 +75,18 @@ class allencahn_fullyimplicit(ptype):
             dx (float): distance between two spatial nodes
 
         Returns:
-            scipy.sparse.csc_matrix: matrix A in CSC format
+             cupyx.scipy.sparse.csr_matrix: cupy-matrix A in CSR format
         """
 
         stencil = cp.asarray([-2, 1])
-        A = stencil[0] * csp.eye(N[0], format='csr')  # TODO: is this the right format? Was: csc
+        A = stencil[0] * csp.eye(N[0], format='csr')
         for i in range(1, len(stencil)):
             A += stencil[i] * csp.eye(N[0], k=-i, format='csr')
             A += stencil[i] * csp.eye(N[0], k=+i, format='csr')
             A += stencil[i] * csp.eye(N[0], k=N[0] - i, format='csr')
             A += stencil[i] * csp.eye(N[0], k=-N[0] + i, format='csr')
         A = csp.kron(A, csp.eye(N[0])) + csp.kron(csp.eye(N[1]), A)
-        A *= 1.0 / (dx ** 2)
+        A *= 1.0 / (dx**2)
         return A
 
     # noinspection PyTypeChecker
@@ -109,7 +107,7 @@ class allencahn_fullyimplicit(ptype):
         u = self.dtype_u(u0).flatten()
         z = self.dtype_u(self.init, val=0.0).flatten()
         nu = self.params.nu
-        eps2 = self.params.eps ** 2
+        eps2 = self.params.eps**2
 
         Id = csp.eye(self.params.nvars[0] * self.params.nvars[1])
 
@@ -119,7 +117,7 @@ class allencahn_fullyimplicit(ptype):
         while n < self.params.newton_maxiter:
 
             # form the function g with g(u) = 0
-            g = u - factor * (self.A.dot(u) + 1.0 / eps2 * u * (1.0 - u ** nu)) - rhs.flatten()
+            g = u - factor * (self.A.dot(u) + 1.0 / eps2 * u * (1.0 - u**nu)) - rhs.flatten()
 
             # if g is close to 0, then we are done
             res = cp.linalg.norm(g, np.inf)
@@ -128,7 +126,7 @@ class allencahn_fullyimplicit(ptype):
                 break
 
             # assemble dg
-            dg = Id - factor * (self.A + 1.0 / eps2 * csp.diags((1.0 - (nu + 1) * u ** nu), offsets=0))
+            dg = Id - factor * (self.A + 1.0 / eps2 * csp.diags((1.0 - (nu + 1) * u**nu), offsets=0))
 
             # newton update: u1 = u0 - g/dg
             # u -= spsolve(dg, g)
@@ -161,7 +159,7 @@ class allencahn_fullyimplicit(ptype):
         """
         f = self.dtype_f(self.init)
         v = u.flatten()
-        f[:] = (self.A.dot(v) + 1.0 / self.params.eps ** 2 * v * (1.0 - v ** self.params.nu)).reshape(self.params.nvars)
+        f[:] = (self.A.dot(v) + 1.0 / self.params.eps**2 * v * (1.0 - v**self.params.nu)).reshape(self.params.nvars)
 
         return f
 
@@ -179,7 +177,7 @@ class allencahn_fullyimplicit(ptype):
         assert t == 0, 'ERROR: u_exact only valid for t=0'
         me = self.dtype_u(self.init, val=0.0)
         mx, my = cp.meshgrid(self.xvalues, self.xvalues)
-        me[:] = cp.tanh((self.params.radius - cp.sqrt(mx ** 2 + my ** 2)) / (cp.sqrt(2) * self.params.eps))
+        me[:] = cp.tanh((self.params.radius - cp.sqrt(mx**2 + my**2)) / (cp.sqrt(2) * self.params.eps))
         # print(type(me))
         return me
 
@@ -196,14 +194,12 @@ class allencahn_semiimplicit(allencahn_fullyimplicit):
 
         Args:
             problem_params (dict): custom parameters for the example
-            dtype_u: mesh data type (will be passed parent class)
-            dtype_f: mesh data type with implicit and explicit parts (will be passed parent class)
+            dtype_u: cupy_mesh data type (will be passed parent class)
+            dtype_f: cupy_mesh data type with implicit and explicit parts (will be passed parent class)
         """
 
         # invoke super init, passing number of dofs, dtype_u and dtype_f
         super(allencahn_semiimplicit, self).__init__(problem_params, dtype_u, dtype_f)
-        self.f_im = 0
-        self.f_ex = 0
 
     def eval_f(self, u, t):
         """
@@ -255,8 +251,14 @@ class allencahn_semiimplicit(allencahn_fullyimplicit):
 
         Id = csp.eye(self.params.nvars[0] * self.params.nvars[1])
 
-        me[:] = cg(Id - factor * self.A, rhs.flatten(), x0=u0.flatten(), tol=self.params.lin_tol,
-                   maxiter=self.params.lin_maxiter, callback=callback)[0].reshape(self.params.nvars)
+        me[:] = cg(
+            Id - factor * self.A,
+            rhs.flatten(),
+            x0=u0.flatten(),
+            tol=self.params.lin_tol,
+            maxiter=self.params.lin_maxiter,
+            callback=callback,
+        )[0].reshape(self.params.nvars)
 
         self.lin_ncalls += 1
         self.lin_itercount += context.num_iter
@@ -276,8 +278,8 @@ class allencahn_semiimplicit_v2(allencahn_fullyimplicit):
 
         Args:
             problem_params (dict): custom parameters for the example
-            dtype_u: mesh data type (will be passed parent class)
-            dtype_f: mesh data type with implicit and explicit parts (will be passed parent class)
+            dtype_u: cupy_mesh data type (will be passed parent class)
+            dtype_f: cupy_mesh data type with implicit and explicit parts (will be passed parent class)
         """
 
         # invoke super init, passing number of dofs, dtype_u and dtype_f
@@ -296,8 +298,8 @@ class allencahn_semiimplicit_v2(allencahn_fullyimplicit):
         """
         f = self.dtype_f(self.init)
         v = u.flatten()
-        f.impl[:] = (self.A.dot(v) - 1.0 / self.params.eps ** 2 * v ** (self.params.nu + 1)).reshape(self.params.nvars)
-        f.expl[:] = (1.0 / self.params.eps ** 2 * v).reshape(self.params.nvars)
+        f.impl[:] = (self.A.dot(v) - 1.0 / self.params.eps**2 * v ** (self.params.nu + 1)).reshape(self.params.nvars)
+        f.expl[:] = (1.0 / self.params.eps**2 * v).reshape(self.params.nvars)
 
         return f
 
@@ -318,7 +320,7 @@ class allencahn_semiimplicit_v2(allencahn_fullyimplicit):
         u = self.dtype_u(u0).flatten()
         z = self.dtype_u(self.init, val=0.0).flatten()
         nu = self.params.nu
-        eps2 = self.params.eps ** 2
+        eps2 = self.params.eps**2
 
         Id = csp.eye(self.params.nvars[0] * self.params.nvars[1])
 
@@ -337,7 +339,7 @@ class allencahn_semiimplicit_v2(allencahn_fullyimplicit):
                 break
 
             # assemble dg
-            dg = Id - factor * (self.A - 1.0 / eps2 * csp.diags(((nu + 1) * u ** nu), offsets=0))
+            dg = Id - factor * (self.A - 1.0 / eps2 * csp.diags(((nu + 1) * u**nu), offsets=0))
 
             # newton update: u1 = u0 - g/dg
             # u -= spsolve(dg, g)
@@ -391,7 +393,7 @@ class allencahn_multiimplicit(allencahn_fullyimplicit):
         f = self.dtype_f(self.init)
         v = u.flatten()
         f.comp1[:] = self.A.dot(v).reshape(self.params.nvars)
-        f.comp2[:] = (1.0 / self.params.eps ** 2 * v * (1.0 - v ** self.params.nu)).reshape(self.params.nvars)
+        f.comp2[:] = (1.0 / self.params.eps**2 * v * (1.0 - v**self.params.nu)).reshape(self.params.nvars)
 
         return f
 
@@ -420,8 +422,14 @@ class allencahn_multiimplicit(allencahn_fullyimplicit):
 
         Id = csp.eye(self.params.nvars[0] * self.params.nvars[1])
 
-        me[:] = cg(Id - factor * self.A, rhs.flatten(), x0=u0.flatten(), tol=self.params.lin_tol,
-                   maxiter=self.params.lin_maxiter, callback=callback)[0].reshape(self.params.nvars)
+        me[:] = cg(
+            Id - factor * self.A,
+            rhs.flatten(),
+            x0=u0.flatten(),
+            tol=self.params.lin_tol,
+            maxiter=self.params.lin_maxiter,
+            callback=callback,
+        )[0].reshape(self.params.nvars)
 
         self.lin_ncalls += 1
         self.lin_itercount += context.num_iter
@@ -445,7 +453,7 @@ class allencahn_multiimplicit(allencahn_fullyimplicit):
         u = self.dtype_u(u0).flatten()
         z = self.dtype_u(self.init, val=0.0).flatten()
         nu = self.params.nu
-        eps2 = self.params.eps ** 2
+        eps2 = self.params.eps**2
 
         Id = csp.eye(self.params.nvars[0] * self.params.nvars[1])
 
@@ -455,7 +463,7 @@ class allencahn_multiimplicit(allencahn_fullyimplicit):
         while n < self.params.newton_maxiter:
 
             # form the function g with g(u) = 0
-            g = u - factor * (1.0 / eps2 * u * (1.0 - u ** nu)) - rhs.flatten()
+            g = u - factor * (1.0 / eps2 * u * (1.0 - u**nu)) - rhs.flatten()
 
             # if g is close to 0, then we are done
             res = cp.linalg.norm(g, np.inf)
@@ -464,7 +472,7 @@ class allencahn_multiimplicit(allencahn_fullyimplicit):
                 break
 
             # assemble dg
-            dg = Id - factor * (1.0 / eps2 * csp.diags((1.0 - (nu + 1) * u ** nu), offsets=0))
+            dg = Id - factor * (1.0 / eps2 * csp.diags((1.0 - (nu + 1) * u**nu), offsets=0))
 
             # newton update: u1 = u0 - g/dg
             # u -= spsolve(dg, g)
@@ -517,8 +525,8 @@ class allencahn_multiimplicit_v2(allencahn_fullyimplicit):
         """
         f = self.dtype_f(self.init)
         v = u.flatten()
-        f.comp1[:] = (self.A.dot(v) - 1.0 / self.params.eps ** 2 * v ** (self.params.nu + 1)).reshape(self.params.nvars)
-        f.comp2[:] = (1.0 / self.params.eps ** 2 * v).reshape(self.params.nvars)
+        f.comp1[:] = (self.A.dot(v) - 1.0 / self.params.eps**2 * v ** (self.params.nu + 1)).reshape(self.params.nvars)
+        f.comp2[:] = (1.0 / self.params.eps**2 * v).reshape(self.params.nvars)
 
         return f
 
@@ -539,7 +547,7 @@ class allencahn_multiimplicit_v2(allencahn_fullyimplicit):
         u = self.dtype_u(u0).flatten()
         z = self.dtype_u(self.init, val=0.0).flatten()
         nu = self.params.nu
-        eps2 = self.params.eps ** 2
+        eps2 = self.params.eps**2
 
         Id = csp.eye(self.params.nvars[0] * self.params.nvars[1])
 
@@ -558,7 +566,7 @@ class allencahn_multiimplicit_v2(allencahn_fullyimplicit):
                 break
 
             # assemble dg
-            dg = Id - factor * (self.A - 1.0 / eps2 * csp.diags(((nu + 1) * u ** nu), offsets=0))
+            dg = Id - factor * (self.A - 1.0 / eps2 * csp.diags(((nu + 1) * u**nu), offsets=0))
 
             # newton update: u1 = u0 - g/dg
             # u -= spsolve(dg, g)
@@ -594,5 +602,5 @@ class allencahn_multiimplicit_v2(allencahn_fullyimplicit):
 
         me = self.dtype_u(self.init)
 
-        me[:] = (1.0 / (1.0 - factor * 1.0 / self.params.eps ** 2) * rhs).reshape(self.params.nvars)
+        me[:] = (1.0 / (1.0 - factor * 1.0 / self.params.eps**2) * rhs).reshape(self.params.nvars)
         return me

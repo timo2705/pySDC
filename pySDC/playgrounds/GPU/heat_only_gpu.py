@@ -1,5 +1,5 @@
-from pySDC.implementations.problem_classes.HeatEquation_ND_FD_forced_periodic_gpu import heatNd_periodic
-from pySDC.implementations.collocation_classes.gauss_radau_right import CollGaussRadau_Right
+from pySDC.implementations.problem_classes.HeatEquation_ND_FD_CuPy import heatNd_forced
+from pySDC.core.Collocation import CollBase as Collocation
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
 from pySDC.helpers.stats_helper import filter_stats, sort_stats
@@ -16,6 +16,7 @@ problem_params['lintol'] = 1E-10
 problem_params['liniter'] = 99
 problem_params['direct_solver'] = False
 problem_params['nvars'] = (N, N, N)
+problem_params['bc'] = 'periodic'
 
 # initialize level parameters
 level_params = dict()
@@ -25,7 +26,9 @@ level_params['nsweeps'] = 1
 
 # initialize sweeper parameters
 sweeper_params = dict()
-sweeper_params['collocation_class'] = CollGaussRadau_Right
+sweeper_params['collocation_class'] = Collocation
+sweeper_params['node_type'] = 'LEGENDRE'
+sweeper_params['quad_type'] = 'RADAU-RIGHT'
 sweeper_params['QI'] = ['LU']
 sweeper_params['QE'] = ['PIC']
 sweeper_params['num_nodes'] = 3
@@ -53,7 +56,7 @@ controller_params['hook_class'] = hook_gpu
 
 # fill description dictionary for easy step instantiation
 description = dict()
-description['problem_class'] = heatNd_periodic
+description['problem_class'] = heatNd_forced
 description['problem_params'] = problem_params  # pass problem parameters
 description['sweeper_class'] = imex_1st_order  # pass sweeper
 description['sweeper_params'] = sweeper_params  # pass sweeper parameters
