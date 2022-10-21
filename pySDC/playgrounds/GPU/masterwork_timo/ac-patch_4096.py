@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import cupy as cp
 import time
 
-from pySDC.implementations.collocation_classes.gauss_radau_right import CollGaussRadau_Right
+from pySDC.core.Collocation import CollBase as Collocation
 from pySDC.implementations.controller_classes.controller_nonMPI import controller_nonMPI
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
 from pySDC.implementations.problem_classes.AllenCahn_FFT_gpu import allencahn_imex as ac_gpu
@@ -17,7 +17,9 @@ level_params['nsweeps'] = 1
 
 # initialize sweeper parameters
 sweeper_params = dict()
-sweeper_params['collocation_class'] = CollGaussRadau_Right
+sweeper_params['collocation_class'] = Collocation
+sweeper_params['node_type'] = 'LEGENDRE'
+sweeper_params['quad_type'] = 'RADAU-RIGHT'
 sweeper_params['num_nodes'] = 3
 sweeper_params['QI'] = 'LU'  # For the IMEX sweeper, the LU-trick can be activated for the implicit part
 sweeper_params['initial_guess'] = 'zero'
