@@ -61,7 +61,7 @@ controller = controller_nonMPI(num_procs=1, controller_params=controller_params,
 
 # set time parameters
 t0 = 0.0
-schritte = 500
+schritte = 2000
 Tend = t0 + 1 * level_params['dt']
 
 # get initial values on finest level
@@ -70,7 +70,7 @@ uinit = P.u_exact(t0)
 plt.imshow(cp.asnumpy(uinit), extent=[-0.5, 0.5, -0.5, 0.5])
 plt.title("Time = {time:.3f}".format(time=t0))
 plt.colorbar()
-plt.savefig("pngs/uend_4096_32x32_000.png")
+plt.savefig("pngs/uend_4096_32x32_0000.png")
 plt.clf()
 for i in range(1, schritte+1):
     # call main function to get things done...
@@ -80,7 +80,7 @@ for i in range(1, schritte+1):
         plt.imshow(cp.asnumpy(uend), extent=[-0.5, 0.5, -0.5, 0.5])
         plt.title("Time = {time:.3f}".format(time=Tend))
         plt.colorbar()
-        plt.savefig("pngs/uend_4096_32x32_{index:03d}.png".format(index=i))
+        plt.savefig("pngs/uend_4096_32x32_{index:04d}.png".format(index=i))
         plt.clf()
     t0 = Tend
     Tend = t0 + 1 * level_params['dt']
@@ -88,7 +88,7 @@ for i in range(1, schritte+1):
 plt.imshow(cp.asnumpy(uend), extent=[-0.5, 0.5, -0.5, 0.5])
 plt.title("Time = {time:.3f}".format(time=Tend))
 plt.colorbar()
-plt.savefig("pngs/uend_4096_32x32_{index:03d}.png".format(index=i))
+plt.savefig("pngs/uend_4096_32x32_{index:04d}.png".format(index=i))
 plt.clf()
 end = time.perf_counter()
 print('done in {time:5.3f} seconds'.format(time=(end-start)))
