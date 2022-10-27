@@ -25,13 +25,15 @@ sweeper_params['QI'] = 'LU'  # For the IMEX sweeper, the LU-trick can be activat
 sweeper_params['initial_guess'] = 'zero'
 
 # initialize problem parameters
+N = 4096
 problem_params = dict()
-# problem_params['nvars'] = (2048, 2048)  # für 128x128
+problem_params['nvars'] = (N, N)  # für 128x128
+# problem_params['L'] = 64.0
 # problem_params['nvars'] = (1024, 1024)  # für 64x64
 # problem_params['nvars'] = (512, 512)  # für 32x32
 # problem_params['L'] = 16.0
 
-problem_params['nvars'] = (4096, 4096)
+# problem_params['nvars'] = (4096, 4096)
 problem_params['L'] = 128.0
 problem_params['eps'] = 0.04
 problem_params['dw'] = -10  # -23.6
@@ -69,28 +71,42 @@ Tend = t0 + 1 * level_params['dt']
 # get initial values on finest level
 P = controller.MS[0].levels[0].prob
 uinit = P.u_exact(t0)
-plt.imshow(cp.asnumpy(uinit), extent=[-0.5, 0.5, -0.5, 0.5])
-plt.title("Time = {time:.3f}".format(time=t0))
-plt.colorbar()
-plt.savefig("pngs/uend_4096_32x32_0000.png")
+start_y = int(0.81*N)
+end_y = int(0.96*N)
+start_x = int(0.69*N)
+end_x = int(0.84*N)
+y_2 = 0.81*-0.5
+y_ = 0.96*-0.5
+x_ = 0.69*0.5
+x_2 = 0.84*0.5
+plt.imshow(cp.asnumpy(uinit[start_x:end_x, start_y:end_y]), extent=[x_,x_2,y_,y_2])
+plt.savefig("zoom/uend_4096_32x32_0000.png")
 plt.clf()
+# plt.imshow(cp.asnumpy(uinit), extent=[-0.5, 0.5, -0.5, 0.5])
+# plt.title("Time = {time:.3f}".format(time=t0))
+# plt.colorbar()
+# plt.savefig("pngs/uend_4096_32x32_0000.png")
+# plt.clf()
 for i in range(1, schritte+1):
     # call main function to get things done...
     uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
     if i % 1 == 0:
-        print("saved a png at Tend = {time:.3f}".format(time=Tend))
-        plt.imshow(cp.asnumpy(uend), extent=[-0.5, 0.5, -0.5, 0.5])
-        plt.title("Time = {time:.3f}".format(time=Tend))
-        plt.colorbar()
-        plt.savefig("pngs/uend_4096_32x32_{index:04d}.png".format(index=i))
+        plt.imshow(cp.asnumpy(uinit[start_x:end_x, start_y:end_y]), extent=[x_,x_2,y_,y_2])
+        plt.savefig("zoom/uend_4096_32x32_{index:04d}.png".format(index=i))
         plt.clf()
+        print("saved a png at Tend = {time:.3f}".format(time=Tend))
+        # plt.imshow(cp.asnumpy(uend), extent=[-0.5, 0.5, -0.5, 0.5])
+        # plt.title("Time = {time:.3f}".format(time=Tend))
+        # plt.colorbar()
+        # plt.savefig("pngs/uend_4096_32x32_{index:04d}.png".format(index=i))
+        # plt.clf()
     t0 = Tend
     Tend = t0 + 1 * level_params['dt']
     uinit = uend
-plt.imshow(cp.asnumpy(uend), extent=[-0.5, 0.5, -0.5, 0.5])
-plt.title("Time = {time:.3f}".format(time=Tend))
-plt.colorbar()
-plt.savefig("pngs/uend_4096_32x32_{index:04d}.png".format(index=i))
-plt.clf()
+# plt.imshow(cp.asnumpy(uend), extent=[-0.5, 0.5, -0.5, 0.5])
+# plt.title("Time = {time:.3f}".format(time=Tend))
+# plt.colorbar()
+# plt.savefig("pngs/uend_4096_32x32_{index:04d}.png".format(index=i))
+# plt.clf()
 end = time.perf_counter()
 print('done in {time:5.3f} seconds'.format(time=(end-start)))
