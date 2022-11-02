@@ -1,3 +1,5 @@
+import time
+
 from pySDC.implementations.problem_classes.HeatEquation_ND_FD import heatNd_forced
 from pySDC.core.Collocation import CollBase as Collocation
 from pySDC.implementations.sweeper_classes.imex_1st_order import imex_1st_order
@@ -63,9 +65,12 @@ P = controller.MS[0].levels[0].prob
 uinit = P.u_exact(t0)
 
 # call main function to get things done...
+start = time.perf_counter()
 uend, stats = controller.run(u0=uinit, t0=t0, Tend=Tend)
+end = time.perf_counter()
 timing = sort_stats(filter_stats(stats, type='timing_run'), sortby='time')
 print('Laufzeit:', timing[0][1])
+print('neue Laufzeit', end-start)
 niter = filter_stats(stats, type='niter')
 print('Fehler', abs(uend - P.u_exact(Tend)))
 # print(len(niter))

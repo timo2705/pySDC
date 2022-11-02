@@ -171,7 +171,7 @@ class heatNd_forced(ptype):
         Returns:
             dtype_u: solution as mesh
         """
-
+        # print(u0.flatten())
         me = self.dtype_u(self.init)
 
         if self.params.direct_solver:
